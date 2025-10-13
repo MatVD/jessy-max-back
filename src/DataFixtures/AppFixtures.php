@@ -82,7 +82,7 @@ class AppFixtures extends Fixture
                 ->setPrice($eventData['price'])
                 ->setTotalTickets($eventData['totalTickets'])
                 ->setAvailableTickets($eventData['availableTickets']);
-            
+
             $manager->persist($event);
         }
 
@@ -150,7 +150,7 @@ class AppFixtures extends Fixture
                 ->setCurrentParticipants($formationData['currentParticipants'])
                 ->setInstructor($formationData['instructor'])
                 ->setCategory($formationData['category']);
-            
+
             $manager->persist($formation);
         }
 
@@ -178,7 +178,7 @@ class AppFixtures extends Fixture
             $message->setName($messageData['name'])
                 ->setEmail($messageData['email'])
                 ->setMessage($messageData['message']);
-            
+
             $manager->persist($message);
         }
 

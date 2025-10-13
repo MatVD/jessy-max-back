@@ -20,8 +20,7 @@ class TicketProcessor implements ProcessorInterface
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly QRCodeGenerator $qrCodeGenerator,
-    ) {
-    }
+    ) {}
 
     /**
      * @param Ticket $data
@@ -66,7 +65,6 @@ class TicketProcessor implements ProcessorInterface
             $this->entityManager->commit();
 
             return $data;
-
         } catch (\Exception $e) {
             // Rollback en cas d'erreur
             $this->entityManager->rollback();

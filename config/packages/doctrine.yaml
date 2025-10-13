@@ -1,13 +1,13 @@
 doctrine:
     dbal:
-        url: '%env(resolve:DATABASE_URL)%'
-        driver: 'pdo_mysql'
-        server_version: '8.0'
+        url: "%env(resolve:DATABASE_URL)%"
+        driver: "pdo_mysql"
+        server_version: "8.0"
         charset: utf8mb4
         default_table_options:
             charset: utf8mb4
             collate: utf8mb4_unicode_ci
-        profiling_collect_backtrace: '%kernel.debug%'
+        profiling_collect_backtrace: "%kernel.debug%"
         use_savepoints: true
     orm:
         auto_generate_proxy_classes: true
@@ -22,7 +22,7 @@ doctrine:
             App:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
+                dir: "%kernel.project_dir%/src/Entity"
                 prefix: 'App\Entity'
                 alias: App
         controller_resolver:
@@ -32,13 +32,13 @@ when@test:
     doctrine:
         dbal:
             # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            dbname_suffix: "_test%env(default::TEST_TOKEN)%"
 
 when@prod:
     doctrine:
         orm:
             auto_generate_proxy_classes: false
-            proxy_dir: '%kernel.build_dir%/doctrine/orm/Proxies'
+            proxy_dir: "%kernel.build_dir%/doctrine/orm/Proxies"
             query_cache_driver:
                 type: pool
                 pool: doctrine.system_cache_pool

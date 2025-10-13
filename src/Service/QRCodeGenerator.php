@@ -13,8 +13,7 @@ class QRCodeGenerator
 {
     public function __construct(
         private readonly TicketRepository $ticketRepository
-    ) {
-    }
+    ) {}
 
     /**
      * Génère un code QR unique pour un ticket
@@ -29,17 +28,17 @@ class QRCodeGenerator
             $timestamp = time();
             $random = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
             $code = sprintf('TICKET-%d-%s', $timestamp, $random);
-            
+
             $attempt++;
-            
+
             // Vérifier l'unicité
             if (!$this->ticketRepository->qrCodeExists($code)) {
                 return $code;
             }
-            
+
             // Petit délai pour éviter les collisions sur le timestamp
             usleep(100000); // 100ms
-            
+
         } while ($attempt < $maxAttempts);
 
         throw new \RuntimeException('Unable to generate a unique QR code after ' . $maxAttempts . ' attempts.');

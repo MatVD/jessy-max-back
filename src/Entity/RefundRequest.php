@@ -132,12 +132,12 @@ class RefundRequest
     public function setStatus(string $status): static
     {
         $this->status = $status;
-        
+
         // Automatiquement mettre à jour processedAt si le status change
         if ($status !== 'pending') {
             $this->processedAt = new \DateTimeImmutable();
         }
-        
+
         return $this;
     }
 

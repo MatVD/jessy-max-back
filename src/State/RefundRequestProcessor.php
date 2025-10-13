@@ -18,8 +18,7 @@ class RefundRequestProcessor implements ProcessorInterface
         private readonly EntityManagerInterface $entityManager,
         private readonly RefundRequestRepository $refundRequestRepository,
         private readonly ProcessorInterface $persistProcessor,
-    ) {
-    }
+    ) {}
 
     /**
      * @param RefundRequest $data
@@ -29,7 +28,7 @@ class RefundRequestProcessor implements ProcessorInterface
         // Vérifier qu'il n'y a pas déjà une demande en attente ou approuvée pour ce ticket
         if ($data->getTicket()) {
             $ticketId = (string) $data->getTicket()->getId();
-            
+
             if ($this->refundRequestRepository->hasPendingOrApprovedRefund($ticketId)) {
                 throw new BadRequestHttpException(
                     'A refund request for this ticket is already pending or has been approved.'
