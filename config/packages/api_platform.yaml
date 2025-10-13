@@ -1,7 +1,22 @@
 api_platform:
-    title: Hello API Platform
-    version: 1.0.0
+    title: 'Jessy Max API'
+    version: '1.0.0'
+    description: 'API pour la plateforme de billetterie Jessy Max - Concerts et Formations musicales'
+    
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+    
     defaults:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
+        pagination_enabled: true
+        pagination_items_per_page: 30
+        pagination_client_enabled: true
+        pagination_client_items_per_page: true
+        pagination_maximum_items_per_page: 100
+    
+    exception_to_status:
+        Symfony\Component\Serializer\Exception\ExceptionInterface: 400
+        ApiPlatform\Exception\InvalidArgumentException: 400
