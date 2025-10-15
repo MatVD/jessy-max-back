@@ -1,0 +1,11 @@
+# Minimal Caddyfile for local Mercure dev
+# Listens on port 80 and exposes a simple /healthz endpoint
+:80
+
+route /healthz {
+    respond "ok" 200
+}
+
+# Proxy any other requests to the Mercure hub handler shipped in the image
+# (adjust the handler if your image expects a different setup)
+reverse_proxy /hub* 127.0.0.1:80
