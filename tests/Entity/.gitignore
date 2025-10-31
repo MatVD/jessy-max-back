@@ -1,0 +1,2 @@
+# Ignore all except test files
+!*.php
