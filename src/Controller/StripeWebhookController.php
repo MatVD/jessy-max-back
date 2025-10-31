@@ -24,7 +24,6 @@ class StripeWebhookController extends AbstractController
         private readonly string $stripeSecretKey,
         private readonly string $stripeWebhookSecret,
         private readonly EntityManagerInterface $entityManager,
-        private readonly TicketRepository $ticketRepository,
         private readonly QrCodeService $qrCodeService,
         private readonly TicketEmailService $ticketEmailService,
         private readonly LoggerInterface $logger
@@ -32,7 +31,7 @@ class StripeWebhookController extends AbstractController
         Stripe::setApiKey($this->stripeSecretKey);
     }
 
-    #[Route('/webhook/stripe', name: 'stripe_webhook', methods: ['POST'])]
+    #[Route('/stripe/webhook', name: 'stripe_webhook', methods: ['POST'])]
     public function handleWebhook(Request $request): Response
     {
         $payload = $request->getContent();
@@ -72,7 +71,7 @@ class StripeWebhookController extends AbstractController
             return;
         }
 
-        $ticket = $this->ticketRepository->find(Uuid::fromString($ticketId));
+        $ticket = $this->entityManager->getRepository(Ticket::class)->find(Uuid::fromString($ticketId));
         
         if (!$ticket) {
             $this->logger->error('Stripe webhook: Ticket not found', ['ticket_id' => $ticketId]);
@@ -112,7 +111,7 @@ class StripeWebhookController extends AbstractController
     private function handlePaymentFailed($paymentIntent): void
     {
         // Trouver le ticket via payment_intent
-        $ticket = $this->ticketRepository->findOneBy([
+        $ticket = $this->entityManager->getRepository(Ticket::class)->findOneBy([
             'stripePaymentIntentId' => $paymentIntent->id
         ]);
 

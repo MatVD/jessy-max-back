@@ -17,9 +17,8 @@ use Symfony\Component\Uid\Uuid;
 class TicketValidationController extends AbstractController
 {
     public function __construct(
-        private readonly TicketRepository $ticketRepository,
-        private readonly QrCodeService $qrCodeService,
-        private readonly EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private readonly QrCodeService $qrCodeService
     ) {}
 
     /**
@@ -48,7 +47,7 @@ class TicketValidationController extends AbstractController
         }
 
         // Récupérer le ticket
-        $ticket = $this->ticketRepository->find(Uuid::fromString($qrData['ticket_id']));
+        $ticket = $this->entityManager->getRepository(Ticket::class)->find(Uuid::fromString($qrData['ticket_id']));
 
         if (!$ticket) {
             return $this->json([
@@ -115,7 +114,7 @@ class TicketValidationController extends AbstractController
         }
 
         // Récupérer le ticket
-        $ticket = $this->ticketRepository->find(Uuid::fromString($qrData['ticket_id']));
+        $ticket = $this->entityManager->getRepository(Ticket::class)->find(Uuid::fromString($qrData['ticket_id']));
 
         if (!$ticket) {
             return $this->json([
@@ -143,7 +142,7 @@ class TicketValidationController extends AbstractController
     #[Route('/event/{eventId}', name: 'list_by_event', methods: ['GET'])]
     public function listByEvent(string $eventId): JsonResponse
     {
-        $tickets = $this->ticketRepository->findPaidByEvent($eventId);
+        $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByEvent($eventId);
 
         return $this->json([
             'total' => count($tickets),
@@ -165,7 +164,7 @@ class TicketValidationController extends AbstractController
     #[Route('/event/{eventId}/stats', name: 'event_stats', methods: ['GET'])]
     public function eventStats(string $eventId): JsonResponse
     {
-        $tickets = $this->ticketRepository->findPaidByEvent($eventId);
+        $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByEvent($eventId);
         $usedTickets = array_filter($tickets, fn(Ticket $t) => $t->isUsed());
 
         $totalRevenue = array_reduce(
