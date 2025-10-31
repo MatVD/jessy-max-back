@@ -7,7 +7,7 @@ parameters:
     stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe_webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
     frontend_url: '%env(FRONTEND_URL)%'
-    jwtSecret: '%env(JWT_SECRET)%'
+    jwtSecret: '%env(JWT_QRCODE_SECRET)%'
     fromEmail: '%env(MAIL_FROM_ADDRESS)%'
 
 services:
