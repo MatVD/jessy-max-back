@@ -5,9 +5,8 @@ namespace App\State;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Ticket;
-use App\Entity\Event;
-use App\Entity\Formation;
-use App\Service\QRCodeGenerator;
+use App\Enum\PaymentStatus;
+use App\Service\QrCodeService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -19,7 +18,7 @@ class TicketProcessor implements ProcessorInterface
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly QRCodeGenerator $qrCodeGenerator,
+        private readonly QrCodeService $qrCodeGenerator
     ) {}
 
     /**
@@ -51,11 +50,11 @@ class TicketProcessor implements ProcessorInterface
             }
 
             // Générer un QR code unique
-            $qrCode = $this->qrCodeGenerator->generateUniqueTicketCode();
+            $qrCode = $this->qrCodeGenerator->generateQrCode($data);
             $data->setQrCode($qrCode);
 
             // Définir le statut du paiement (pour le moment, on considère "completed" directement)
-            $data->setPaymentStatus('completed');
+            $data->setPaymentStatus(PaymentStatus::PAID);
 
             // Persister le ticket
             $this->entityManager->persist($data);
@@ -78,25 +77,20 @@ class TicketProcessor implements ProcessorInterface
     private function processEventTicket(Ticket $ticket): void
     {
         $event = $ticket->getEvent();
-        $quantity = $ticket->getQuantity();
 
         // Verrouillage pessimiste pour éviter les race conditions
         $this->entityManager->lock($event, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE);
 
         // Vérifier la disponibilité
-        if ($event->getAvailableTickets() < $quantity) {
+        if ($event->getAvailableTickets() < $event->getTickets()->count()) {
             throw new UnprocessableEntityHttpException(
                 sprintf('Insufficient tickets available. Only %d tickets remaining.', $event->getAvailableTickets())
             );
         }
 
-        // Calculer le prix total
-        $unitPrice = (float) $event->getPrice();
-        $totalPrice = $unitPrice * $quantity;
-        $ticket->setTotalPrice((string) number_format($totalPrice, 2, '.', ''));
+        // Calculer le prix
+        $ticket->setTotalPrice($event->getPrice());
 
-        // Décrémenter les billets disponibles
-        $event->setAvailableTickets($event->getAvailableTickets() - $quantity);
         $this->entityManager->persist($event);
     }
 
@@ -106,26 +100,21 @@ class TicketProcessor implements ProcessorInterface
     private function processFormationTicket(Ticket $ticket): void
     {
         $formation = $ticket->getFormation();
-        $quantity = $ticket->getQuantity();
 
         // Verrouillage pessimiste pour éviter les race conditions
         $this->entityManager->lock($formation, \Doctrine\DBAL\LockMode::PESSIMISTIC_WRITE);
 
         // Vérifier la disponibilité
-        $availablePlaces = $formation->getMaxParticipants() - $formation->getCurrentParticipants();
-        if ($availablePlaces < $quantity) {
+        $availablePlaces = $formation->getMaxParticipants();
+        if ($availablePlaces < $formation->getTickets()->count()) {
             throw new UnprocessableEntityHttpException(
                 sprintf('Insufficient places available. Only %d places remaining.', $availablePlaces)
             );
         }
 
         // Calculer le prix total
-        $unitPrice = (float) $formation->getPrice();
-        $totalPrice = $unitPrice * $quantity;
-        $ticket->setTotalPrice((string) number_format($totalPrice, 2, '.', ''));
+        $ticket->setTotalPrice((string) number_format($formation->getPrice(), 2, '.', ''));
 
-        // Incrémenter les participants actuels
-        $formation->setCurrentParticipants($formation->getCurrentParticipants() + $quantity);
         $this->entityManager->persist($formation);
     }
 }
