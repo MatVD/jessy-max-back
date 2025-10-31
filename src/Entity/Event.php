@@ -8,129 +8,85 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
-use App\Repository\EventRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Serializer\Annotation\Groups;
 
-#[ORM\Entity(repositoryClass: EventRepository::class)]
-#[ORM\Table(name: 'events')]
-#[ORM\Index(name: 'idx_events_date', columns: ['date'])]
-#[ORM\Index(name: 'idx_events_event_type', columns: ['event_type'])]
+#[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['event:read', 'event:detail']]),
-        new GetCollection(normalizationContext: ['groups' => ['event:read']]),
-        new Post(
-            denormalizationContext: ['groups' => ['event:write']],
-            security: "is_granted('ROLE_ADMIN')",
-            securityMessage: 'Only admins can create events.'
-        ),
-        new Put(
-            denormalizationContext: ['groups' => ['event:write']],
-            security: "is_granted('ROLE_ADMIN')",
-            securityMessage: 'Only admins can update events.'
-        ),
-        new Delete(
-            security: "is_granted('ROLE_ADMIN')",
-            securityMessage: 'Only admins can delete events.'
-        ),
-    ],
-    order: ['date' => 'ASC'],
-    paginationEnabled: true,
-    paginationItemsPerPage: 30,
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Put(),
+        new Delete()
+    ]
 )]
-#[ApiFilter(DateFilter::class, properties: ['date'])]
-#[ApiFilter(SearchFilter::class, properties: ['eventType' => 'exact'])]
-#[ApiFilter(RangeFilter::class, properties: ['availableTickets'])]
 class Event
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    #[Groups(['event:read', 'ticket:read'])]
-    private ?Uuid $id = null;
+    private Uuid $id;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'The title cannot be blank.')]
-    #[Assert\Length(max: 255, maxMessage: 'The title cannot be longer than {{ limit }} characters.')]
-    #[Groups(['event:read', 'event:write', 'ticket:read'])]
-    private ?string $title = null;
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
+    private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank(message: 'The description cannot be blank.')]
-    #[Groups(['event:read', 'event:write', 'event:detail'])]
-    private ?string $description = null;
-
-    #[ORM\Column(name: 'event_type', length: 100)]
-    #[Assert\NotBlank(message: 'The event type cannot be blank.')]
-    #[Assert\Length(max: 100)]
-    #[Groups(['event:read', 'event:write'])]
-    private ?string $eventType = null;
+    #[Assert\NotBlank]
+    private string $description;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    #[Assert\NotNull(message: 'The date cannot be null.')]
-    #[Assert\GreaterThanOrEqual('today', message: 'The event date must be today or in the future.')]
-    #[Groups(['event:read', 'event:write', 'ticket:read'])]
-    private ?\DateTimeImmutable $date = null;
+    #[Assert\NotNull]
+    private \DateTimeImmutable $date;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'The location cannot be blank.')]
-    #[Assert\Length(max: 255)]
-    #[Groups(['event:read', 'event:write', 'ticket:read'])]
-    private ?string $location = null;
+    #[ORM\ManyToOne(targetEntity: Location::class, inversedBy: 'events')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Location $location = null;
 
-    #[ORM\Column(name: 'image_url', length: 500)]
-    #[Assert\NotBlank(message: 'The image URL cannot be blank.')]
-    #[Assert\Url(message: 'The image URL "{{ value }}" is not a valid URL.')]
-    #[Groups(['event:read', 'event:write'])]
-    private ?string $imageUrl = null;
+    #[ORM\Column(length: 500)]
+    #[Assert\NotBlank]
+    #[Assert\Url]
+    private string $imageUrl;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Assert\NotNull(message: 'The price cannot be null.')]
-    #[Assert\PositiveOrZero(message: 'The price must be positive or zero.')]
-    #[Groups(['event:read', 'event:write', 'ticket:read'])]
-    private ?string $price = null;
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
+    private string $price;
 
-    #[ORM\Column(name: 'available_tickets', type: Types::INTEGER)]
-    #[Assert\PositiveOrZero(message: 'Available tickets must be positive or zero.')]
-    #[Groups(['event:read', 'event:write'])]
-    private int $availableTickets = 0;
+    #[ORM\Column(type: Types::INTEGER)]
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
+    private int $availableTickets;
 
-    #[ORM\Column(name: 'total_tickets', type: Types::INTEGER)]
-    #[Assert\PositiveOrZero(message: 'Total tickets must be positive or zero.')]
-    #[Groups(['event:read', 'event:write'])]
-    private int $totalTickets = 0;
+    #[ORM\Column(type: Types::INTEGER)]
+    #[Assert\NotNull]
+    #[Assert\Positive]
+    private int $totalTickets;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
-    #[Groups(['event:read', 'event:detail'])]
-    private ?\DateTimeImmutable $createdAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
 
-    #[ORM\Column(name: 'updated_at', type: Types::DATETIME_IMMUTABLE)]
-    #[Groups(['event:read', 'event:detail'])]
-    private ?\DateTimeImmutable $updatedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $updatedAt;
 
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'event', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'event')]
     private Collection $tickets;
+
+    #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'events')]
+    #[ORM\JoinTable(name: 'event_category')]
+    private Collection $categories;
 
     public function __construct()
     {
+        $this->id = Uuid::v4();
         $this->tickets = new ArrayCollection();
-    }
-
-    #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
-    {
+        $this->categories = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
     }
@@ -141,95 +97,72 @@ class Event
         $this->updatedAt = new \DateTimeImmutable();
     }
 
-    #[Assert\Callback]
-    public function validate(\Symfony\Component\Validator\Context\ExecutionContextInterface $context): void
-    {
-        if ($this->availableTickets > $this->totalTickets) {
-            $context->buildViolation('Available tickets cannot be greater than total tickets.')
-                ->atPath('availableTickets')
-                ->addViolation();
-        }
-    }
-
-    // Getters and Setters
-
-    public function getId(): ?Uuid
+    public function getId(): Uuid
     {
         return $this->id;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    public function setTitle(string $title): static
+    public function setTitle(string $title): self
     {
         $this->title = $title;
         return $this;
     }
 
-    public function getDescription(): ?string
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(string $description): self
     {
         $this->description = $description;
         return $this;
     }
 
-    public function getEventType(): ?string
-    {
-        return $this->eventType;
-    }
-
-    public function setEventType(string $eventType): static
-    {
-        $this->eventType = $eventType;
-        return $this;
-    }
-
-    public function getDate(): ?\DateTimeImmutable
+    public function getDate(): \DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTimeImmutable $date): static
+    public function setDate(\DateTimeImmutable $date): self
     {
         $this->date = $date;
         return $this;
     }
 
-    public function getLocation(): ?string
+    public function getLocation(): ?Location
     {
         return $this->location;
     }
 
-    public function setLocation(string $location): static
+    public function setLocation(?Location $location): self
     {
         $this->location = $location;
         return $this;
     }
 
-    public function getImageUrl(): ?string
+    public function getImageUrl(): string
     {
         return $this->imageUrl;
     }
 
-    public function setImageUrl(string $imageUrl): static
+    public function setImageUrl(string $imageUrl): self
     {
         $this->imageUrl = $imageUrl;
         return $this;
     }
 
-    public function getPrice(): ?string
+    public function getPrice(): string
     {
         return $this->price;
     }
 
-    public function setPrice(string $price): static
+    public function setPrice(string $price): self
     {
         $this->price = $price;
         return $this;
@@ -240,7 +173,7 @@ class Event
         return $this->availableTickets;
     }
 
-    public function setAvailableTickets(int $availableTickets): static
+    public function setAvailableTickets(int $availableTickets): self
     {
         $this->availableTickets = $availableTickets;
         return $this;
@@ -251,48 +184,43 @@ class Event
         return $this->totalTickets;
     }
 
-    public function setTotalTickets(int $totalTickets): static
+    public function setTotalTickets(int $totalTickets): self
     {
         $this->totalTickets = $totalTickets;
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function getCreatedAt(): \DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?\DateTimeImmutable
+    public function getUpdatedAt(): \DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    /**
-     * @return Collection<int, Ticket>
-     */
     public function getTickets(): Collection
     {
         return $this->tickets;
     }
 
-    public function addTicket(Ticket $ticket): static
+    public function getCategories(): Collection
     {
-        if (!$this->tickets->contains($ticket)) {
-            $this->tickets->add($ticket);
-            $ticket->setEvent($this);
-        }
+        return $this->categories;
+    }
 
+    public function addCategory(Category $category): self
+    {
+        if (!$this->categories->contains($category)) {
+            $this->categories->add($category);
+        }
         return $this;
     }
 
-    public function removeTicket(Ticket $ticket): static
+    public function removeCategory(Category $category): self
     {
-        if ($this->tickets->removeElement($ticket)) {
-            if ($ticket->getEvent() === $this) {
-                $ticket->setEvent(null);
-            }
-        }
-
+        $this->categories->removeElement($category);
         return $this;
     }
 }

@@ -6,48 +6,51 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
-use Doctrine\DBAL\Types\Types;
+use App\Enum\CategoryType;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
+#[ORM\UniqueConstraint(name: 'UNIQ_CATEGORY_NAME', columns: ['name'])]
 #[ApiResource(
     operations: [
         new Get(),
         new GetCollection(),
         new Post(),
+        new Put(),
         new Delete()
     ]
 )]
-class ContactMessage
+class Category
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private Uuid $id;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
     private string $name;
 
-    #[ORM\Column(length: 255)]
-    #[Assert\NotBlank]
-    #[Assert\Email]
-    private string $email;
+    #[ORM\Column(type: 'string', enumType: CategoryType::class)]
+    private CategoryType $type;
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank]
-    private string $message;
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'categories')]
+    private Collection $events;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
-    private \DateTimeImmutable $createdAt;
+    #[ORM\ManyToMany(targetEntity: Formation::class, mappedBy: 'categories')]
+    private Collection $formations;
 
     public function __construct()
     {
         $this->id = Uuid::v4();
-        $this->createdAt = new \DateTimeImmutable();
+        $this->events = new ArrayCollection();
+        $this->formations = new ArrayCollection();
     }
 
     public function getId(): Uuid
@@ -66,30 +69,24 @@ class ContactMessage
         return $this;
     }
 
-    public function getEmail(): string
+    public function getType(): CategoryType
     {
-        return $this->email;
+        return $this->type;
     }
 
-    public function setEmail(string $email): self
+    public function setType(CategoryType $type): self
     {
-        $this->email = $email;
+        $this->type = $type;
         return $this;
     }
 
-    public function getMessage(): string
+    public function getEvents(): Collection
     {
-        return $this->message;
+        return $this->events;
     }
 
-    public function setMessage(string $message): self
+    public function getFormations(): Collection
     {
-        $this->message = $message;
-        return $this;
-    }
-
-    public function getCreatedAt(): \DateTimeImmutable
-    {
-        return $this->createdAt;
+        return $this->formations;
     }
 }
