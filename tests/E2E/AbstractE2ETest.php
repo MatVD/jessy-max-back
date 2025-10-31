@@ -27,10 +27,8 @@ abstract class AbstractE2ETest extends WebTestCase
         $this->client = static::createClient();
         $container = $this->client->getContainer();
         $this->em = $container->get('doctrine')->getManager();
-        
-        // Créer le schéma de la base de données
+
         $this->createSchema();
-        
         $this->createTestUser();
         $this->createTestEvent();
         $this->createTestTicket();
@@ -51,10 +49,9 @@ abstract class AbstractE2ETest extends WebTestCase
         $this->testUser->setRoles(['ROLE_USER']);
         $this->testUser->setFirstName('Bob');
         $this->testUser->setLastName('Durand');
+        // Génère avec: php bin/console security:hash-password bobpass
+        $this->testUser->setPassword('$2y$13$Q0aI2oXFccpnO1xK5V9zQ.P7qa683A.F3lE9qruUj.lqfeUQAmN9q');
 
-        // Hash pour "bobpass" - généré avec: php bin/console security:hash-password bobpass
-        $this->testUser->setPassword('$2y$13$RHT4u52p3M7Yxns348lZD.Lgp0oAHNnax7xvxQ4YZpZC6BRsiYhrO');
-        
         $this->em->persist($this->testUser);
         $this->em->flush();
     }
@@ -69,7 +66,7 @@ abstract class AbstractE2ETest extends WebTestCase
         $this->testEvent->setPrice('100.00');
         $this->testEvent->setTotalTickets(100);
         $this->testEvent->setAvailableTickets(100);
-        
+
         $this->em->persist($this->testEvent);
         $this->em->flush();
     }
@@ -77,7 +74,7 @@ abstract class AbstractE2ETest extends WebTestCase
     private function createTestTicket(): void
     {
         $qrCodeService = $this->client->getContainer()->get(QrCodeService::class);
-        
+
         $this->testTicket = new Ticket();
         $this->testTicket->setEvent($this->testEvent);
         $this->testTicket->setUser($this->testUser);
@@ -86,10 +83,10 @@ abstract class AbstractE2ETest extends WebTestCase
         $this->testTicket->setTotalPrice('100.00');
         $this->testTicket->setPaymentStatus(PaymentStatus::PAID);
         $this->testTicket->setPurchasedAt(new \DateTimeImmutable());
-        
+
         $this->em->persist($this->testTicket);
         $this->em->flush();
-        
+
         $this->validQrCode = $qrCodeService->generateQrCode($this->testTicket);
         $this->testTicket->setQrCode($this->validQrCode);
         $this->em->flush();
@@ -108,16 +105,9 @@ abstract class AbstractE2ETest extends WebTestCase
                 'password' => 'bobpass'
             ])
         );
-        
+
         $response = $this->client->getResponse();
-        
-        // Debug: afficher la réponse si l'auth échoue
-        if ($response->getStatusCode() !== 200) {
-            echo "\nAuthentication failed:\n";
-            echo "Status: " . $response->getStatusCode() . "\n";
-            echo "Response: " . $response->getContent() . "\n";
-        }
-        
+
         $data = json_decode($response->getContent(), true);
         $this->jwtToken = $data['token'] ?? null;
     }
@@ -126,5 +116,11 @@ abstract class AbstractE2ETest extends WebTestCase
     {
         parent::tearDown();
         $this->em->close();
+
+        // Supprimer la DB de test
+        $dbPath = __DIR__ . '/../../var/test.db';
+        if (file_exists($dbPath)) {
+            unlink($dbPath);
+        }
     }
 }
