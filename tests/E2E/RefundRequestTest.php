@@ -37,11 +37,11 @@ class RefundRequestTest extends AbstractE2ETest
                 'HTTP_Authorization' => sprintf('Bearer %s', $token)
             ],
             json_encode([
-                'ticket' => '/api/tickets/1',
+                'ticket' => '/api/tickets/' . $this->testTicket->getId(),
                 'customerName' => 'Bob Durand',
                 'customerEmail' => 'bob.durand@example.com',
                 'reason' => 'Problème de santé',
-                'refundAmount' => 100.00
+                'refundAmount' => '100.00'
             ])
         );
         $response = $this->client->getResponse();
@@ -51,6 +51,7 @@ class RefundRequestTest extends AbstractE2ETest
         $this->assertEquals('Bob Durand', $refundData['customerName']);
         $this->assertEquals('bob.durand@example.com', $refundData['customerEmail']);
         $this->assertEquals('Problème de santé', $refundData['reason']);
-        $this->assertEquals(100.00, $refundData['refundAmount']);
+        // Compare as float since API Platform may normalize decimal values
+        $this->assertEquals(100.00, (float)$refundData['refundAmount']);
     }
 }

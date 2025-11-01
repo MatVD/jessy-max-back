@@ -10,7 +10,7 @@ class TicketValidationTest extends AbstractE2ETest
     {
 
         // Simuler la validation d'un ticket via QR code
-        $qrCode = 'TICKET-QR-1'; // exemple, à adapter selon la génération réelle
+        $qrCode = $this->validQrCode; // Use the actual JWT token from AbstractE2ETest
         $this->client->request(
             'POST',
             '/api/tickets/validate',
@@ -22,12 +22,13 @@ class TicketValidationTest extends AbstractE2ETest
         $response = $this->client->getResponse();
         $this->assertResponseIsSuccessful();
         $data = json_decode($response->getContent(), true);
-        $this->assertArrayHasKey('valid', $data);
-        $this->assertTrue($data['valid']);
+        $this->assertArrayHasKey('success', $data);
+        $this->assertTrue($data['success']);
 
-        // Optionnel: vérifier le statut du ticket (utilisé)
-        // $client->request('GET', '/api/tickets/1');
-        // $ticket = json_decode($client->getResponse()->getContent(), true);
-        // $this->assertTrue($ticket['used']);
+        // Refresh the ticket from database to check it was marked as used
+        $ticketRepo = $this->em->getRepository(\App\Entity\Ticket::class);
+        $updatedTicket = $ticketRepo->find($this->testTicket->getId());
+        $this->assertNotNull($updatedTicket);
+        $this->assertTrue($updatedTicket->isUsed());
     }
 }

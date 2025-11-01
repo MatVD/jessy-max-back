@@ -18,8 +18,9 @@ class StripeWebhookTest extends AbstractE2ETest
                     'payment_status' => 'paid',
                     'customer_email' => 'bob.durand@example.com',
                     'amount_total' => 10000,
+                    'payment_intent' => 'pi_test_123',
                     'metadata' => [
-                        'ticket_id' => 1
+                        'ticket_id' => $this->testTicket->getId()->toRfc4122()
                     ]
                 ]
             ]

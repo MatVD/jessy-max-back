@@ -19,44 +19,34 @@ use Firebase\JWT\Key;
  */
 class QrCodeService
 {
-    private const ALGORITHM = 'HS256';
-    
-    public function __construct(
-        private readonly string $jwtSecret
-    ) {}
-
     /**
      * Génère un QR code sécurisé pour un ticket (JWT signé)
      */
     public function generateQrCode(Ticket $ticket): string
     {
         $eventOrFormation = $ticket->getEvent() ?? $ticket->getFormation();
-        
+
         if (!$eventOrFormation) {
             throw new \LogicException('Le ticket doit être lié à un événement ou une formation');
         }
 
         // Déterminer la date d'expiration (date de l'événement + 1 jour)
-        $eventDate = $ticket->getEvent() 
+        $eventDate = $ticket->getEvent()
             ? $ticket->getEvent()->getDate()
             : $ticket->getFormation()->getStartDate();
-        
+
         $expirationDate = $eventDate->modify('+1 day');
 
         // Payload JWT
         $payload = [
             'ticket_id' => $ticket->getId()->toRfc4122(),
-            'event_id' => $ticket->getEvent()?->getId()->toRfc4122(),
-            'formation_id' => $ticket->getFormation()?->getId()->toRfc4122(),
             'customer_email' => $ticket->getCustomerEmail(),
-            'customer_name' => $ticket->getCustomerName(),
-            'total_price' => $ticket->getTotalPrice(),
-            'iat' => time(),
             'exp' => $expirationDate->getTimestamp(),
         ];
 
-        // Encoder en JWT
-        return JWT::encode($payload, $this->jwtSecret, self::ALGORITHM);
+        // Créer le token JWT avec la clé secrète spécifique aux QR codes
+        $secretKey = $_ENV['JWT_QRCODE_SECRET'] ?? throw new \RuntimeException('JWT_QRCODE_SECRET not configured');
+        return JWT::encode($payload, $secretKey, 'HS256');
     }
 
     /**
@@ -65,7 +55,8 @@ class QrCodeService
     public function validateQrCode(string $qrCode): array
     {
         try {
-            $decoded = JWT::decode($qrCode, new Key($this->jwtSecret, self::ALGORITHM));
+            $secretKey = $_ENV['JWT_QRCODE_SECRET'] ?? throw new \RuntimeException('JWT_QRCODE_SECRET not configured');
+            $decoded = JWT::decode($qrCode, new Key($secretKey, 'HS256'));
             return (array) $decoded;
         } catch (\Exception $e) {
             throw new \InvalidArgumentException('QR code invalide ou expiré: ' . $e->getMessage());
@@ -103,7 +94,7 @@ class QrCodeService
 
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
-        
+
         return $result->getDataUri();
     }
 
@@ -125,7 +116,7 @@ class QrCodeService
 
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
-        
+
         return $result->getString();
     }
 
@@ -146,7 +137,7 @@ class QrCodeService
 
         $writer = new \Endroid\QrCode\Writer\SvgWriter();
         $result = $writer->write($qrCode);
-        
+
         return $result->getString();
     }
 
@@ -165,7 +156,7 @@ class QrCodeService
 
         $writer = new PngWriter();
         $result = $writer->write($qrCode);
-        
+
         $result->saveToFile($filePath);
     }
 }

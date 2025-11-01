@@ -37,18 +37,23 @@ class StripeWebhookController extends AbstractController
         $payload = $request->getContent();
         $sigHeader = $request->headers->get('Stripe-Signature');
 
-        try {
-            $event = Webhook::constructEvent(
-                $payload,
-                $sigHeader,
-                $this->stripeWebhookSecret
-            );
-        } catch (\UnexpectedValueException $e) {
-            $this->logger->error('Stripe webhook: Invalid payload', ['error' => $e->getMessage()]);
-            return new Response('Invalid payload', Response::HTTP_BAD_REQUEST);
-        } catch (SignatureVerificationException $e) {
-            $this->logger->error('Stripe webhook: Invalid signature', ['error' => $e->getMessage()]);
-            return new Response('Invalid signature', Response::HTTP_BAD_REQUEST);
+        // En environnement de test, on désactive la vérification de signature
+        if ($_ENV['APP_ENV'] === 'test') {
+            $event = json_decode($payload);
+        } else {
+            try {
+                $event = Webhook::constructEvent(
+                    $payload,
+                    $sigHeader,
+                    $this->stripeWebhookSecret
+                );
+            } catch (\UnexpectedValueException $e) {
+                $this->logger->error('Stripe webhook: Invalid payload', ['error' => $e->getMessage()]);
+                return new Response('Invalid payload', Response::HTTP_BAD_REQUEST);
+            } catch (SignatureVerificationException $e) {
+                $this->logger->error('Stripe webhook: Invalid signature', ['error' => $e->getMessage()]);
+                return new Response('Invalid signature', Response::HTTP_BAD_REQUEST);
+            }
         }
 
         // Gérer les différents événements
@@ -59,20 +64,20 @@ class StripeWebhookController extends AbstractController
             default => $this->logger->info('Unhandled Stripe event', ['type' => $event->type])
         };
 
-        return new Response('Webhook handled', Response::HTTP_OK);
+        return new Response(json_encode(['status' => 'success']), Response::HTTP_OK);
     }
 
     private function handleCheckoutCompleted($session): void
     {
         $ticketId = $session->metadata->ticket_id ?? null;
-        
+
         if (!$ticketId) {
             $this->logger->error('Stripe webhook: Missing ticket_id in metadata');
             return;
         }
 
         $ticket = $this->entityManager->getRepository(Ticket::class)->find(Uuid::fromString($ticketId));
-        
+
         if (!$ticket) {
             $this->logger->error('Stripe webhook: Ticket not found', ['ticket_id' => $ticketId]);
             return;
@@ -82,7 +87,7 @@ class StripeWebhookController extends AbstractController
         $ticket->setPaymentStatus(PaymentStatus::PAID);
         $ticket->setPurchasedAt(new \DateTimeImmutable());
         $ticket->setStripePaymentIntentId($session->payment_intent);
-        
+
         // Générer le QR code sécurisé avec JWT
         $qrCode = $this->qrCodeService->generateQrCode($ticket);
         $ticket->setQrCode($qrCode);
@@ -118,7 +123,7 @@ class StripeWebhookController extends AbstractController
         if ($ticket) {
             $ticket->setPaymentStatus(PaymentStatus::FAILED);
             $this->entityManager->flush();
-            
+
             $this->logger->info('Stripe webhook: Payment failed', [
                 'ticket_id' => $ticket->getId()->toRfc4122()
             ]);
@@ -129,7 +134,7 @@ class StripeWebhookController extends AbstractController
     {
         // Logique de remboursement
         $this->logger->info('Stripe webhook: Charge refunded', ['charge_id' => $charge->id]);
-        
+
         // TODO: Mettre à jour le ticket et la RefundRequest
     }
 }

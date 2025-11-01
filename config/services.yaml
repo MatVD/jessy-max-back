@@ -4,11 +4,11 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-    stripe_secret_key: '%env(STRIPE_SECRET_KEY)%'
-    stripe_webhook_secret: '%env(STRIPE_WEBHOOK_SECRET)%'
-    frontend_url: '%env(FRONTEND_URL)%'
-    jwtSecret: '%env(JWT_QRCODE_SECRET)%'
-    fromEmail: '%env(MAIL_FROM_ADDRESS)%'
+    stripe_secret_key: "%env(STRIPE_SECRET_KEY)%"
+    stripe_webhook_secret: "%env(STRIPE_WEBHOOK_SECRET)%"
+    frontend_url: "%env(FRONTEND_URL)%"
+    jwtSecret: "%env(JWT_QRCODE_SECRET)%"
+    fromEmail: "%env(MAIL_FROM_ADDRESS)%"
 
 services:
     # default configuration for services in *this* file
@@ -27,34 +27,29 @@ services:
 
     # State Processor pour Stripe Checkout
     App\State\TicketCheckoutProcessor:
-        decorates: 'api_platform.doctrine.orm.state.persist_processor'
+        decorates: "api_platform.doctrine.orm.state.persist_processor"
         arguments:
-            $decorated: '@.inner'
-            $stripeSecretKey: '%stripe_secret_key%'
-            $frontendUrl: '%frontend_url%'
+            $decorated: "@.inner"
+            $stripeSecretKey: "%stripe_secret_key%"
+            $frontendUrl: "%frontend_url%"
 
     # Webhook Controller
     App\Controller\StripeWebhookController:
         arguments:
-            $stripeSecretKey: '%stripe_secret_key%'
-            $stripeWebhookSecret: '%stripe_webhook_secret%'
-        tags: ['controller.service_arguments']
+            $stripeSecretKey: "%stripe_secret_key%"
+            $stripeWebhookSecret: "%stripe_webhook_secret%"
+        tags: ["controller.service_arguments"]
 
     # Repository pour injection
     App\Repository\TicketRepository:
-        factory: ['@doctrine', 'getRepository']
+        factory: ["@doctrine", "getRepository"]
         arguments:
             - 'App\Entity\Ticket'
 
-    # QR Code Service
-    App\Service\QrCodeService:
-        arguments:
-            $jwtSecret: '%jwtSecret%'
-    
     # Email Service
     App\Service\TicketEmailService:
         arguments:
-            $fromEmail: '%env(MAIL_FROM_ADDRESS)%'
+            $fromEmail: "%env(MAIL_FROM_ADDRESS)%"
 
     # State Processors configuration
     App\State\RefundRequestProcessor:
