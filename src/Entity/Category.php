@@ -27,7 +27,7 @@ class Category
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    #[Groups(['category:read', 'category:write', 'event:read', 'formation:read'])]
+    #[Groups(['category:read', 'category:write', 'event:read', 'formation:read', 'event:write', 'formation:write'])]
     private string $name;
 
     #[ORM\Column(type: 'string', enumType: CategoryType::class)]
