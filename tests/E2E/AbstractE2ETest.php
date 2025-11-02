@@ -65,7 +65,6 @@ abstract class AbstractE2ETest extends WebTestCase
         $this->testEvent->setImageUrl('https://example.com/image.jpg');
         $this->testEvent->setPrice('100.00');
         $this->testEvent->setTotalTickets(100);
-        $this->testEvent->setAvailableTickets(100);
 
         $this->em->persist($this->testEvent);
         $this->em->flush();

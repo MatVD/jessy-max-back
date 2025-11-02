@@ -2,7 +2,6 @@
 
 namespace App\Tests\E2E;
 
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 
 class StripeWebhookTest extends AbstractE2ETest
 {

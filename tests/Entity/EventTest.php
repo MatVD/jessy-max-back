@@ -27,14 +27,13 @@ class EventTest extends TestCase
         $event->setDate($date);
         $event->setImageUrl('https://img.com/img.jpg');
         $event->setPrice('50.00');
-        $event->setAvailableTickets(100);
         $event->setTotalTickets(200);
         $this->assertEquals('Concert', $event->getTitle());
         $this->assertEquals('Live music', $event->getDescription());
         $this->assertEquals($date, $event->getDate());
         $this->assertEquals('https://img.com/img.jpg', $event->getImageUrl());
         $this->assertEquals('50.00', $event->getPrice());
-        $this->assertEquals(100, $event->getAvailableTickets());
+        $this->assertEquals(200, $event->getAvailableTickets());
         $this->assertEquals(200, $event->getTotalTickets());
     }
 
