@@ -2,8 +2,6 @@
 
 namespace App\Tests\E2E;
 
-use Symfony\Bundle\FrameworkBundle\KernelBrowser;
-
 class TicketValidationTest extends AbstractE2ETest
 {
     public function testTicketValidationFlow()
@@ -16,7 +14,10 @@ class TicketValidationTest extends AbstractE2ETest
             '/api/tickets/validate',
             [],
             [],
-            ['CONTENT_TYPE' => 'application/json'],
+            [
+                'CONTENT_TYPE' => 'application/json',
+                'HTTP_AUTHORIZATION' => 'Bearer ' . $this->jwtToken
+            ],
             json_encode(['qrCode' => $qrCode])
         );
         $response = $this->client->getResponse();

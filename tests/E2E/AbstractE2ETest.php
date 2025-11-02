@@ -46,7 +46,7 @@ abstract class AbstractE2ETest extends WebTestCase
     {
         $this->testUser = new User();
         $this->testUser->setEmail('bob.durand@example.com');
-        $this->testUser->setRoles(['ROLE_USER']);
+        $this->testUser->setRoles(['ROLE_USER', 'ROLE_TICKET_VALIDATOR']);
         $this->testUser->setFirstName('Bob');
         $this->testUser->setLastName('Durand');
         // Génère avec: php bin/console security:hash-password bobpass
