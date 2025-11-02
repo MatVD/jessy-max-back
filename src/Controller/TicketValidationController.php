@@ -23,10 +23,13 @@ class TicketValidationController extends AbstractController
 
     /**
      * Valide un ticket via QR code
+     * Seulement accessible aux validateurs de tickets
      */
     #[Route('/validate', name: 'validate', methods: ['POST'])]
     public function validateTicket(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_TICKET_VALIDATOR');
+        
         $data = json_decode($request->getContent(), true);
         $qrCode = $data['qrCode'] ?? null;
 
@@ -90,10 +93,13 @@ class TicketValidationController extends AbstractController
 
     /**
      * Vérifie un QR code sans le marquer comme utilisé
+     * Seulement accessible aux admins
      */
     #[Route('/check', name: 'check', methods: ['POST'])]
     public function checkTicket(Request $request): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $data = json_decode($request->getContent(), true);
         $qrCode = $data['qrCode'] ?? null;
 
