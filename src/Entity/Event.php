@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
+use App\Enum\PaymentStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -58,11 +59,6 @@ class Event
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
     private string $price;
-
-    #[ORM\Column(type: Types::INTEGER)]
-    #[Assert\NotNull]
-    #[Assert\PositiveOrZero]
-    private int $availableTickets;
 
     #[ORM\Column(type: Types::INTEGER)]
     #[Assert\NotNull]
@@ -170,13 +166,11 @@ class Event
 
     public function getAvailableTickets(): int
     {
-        return $this->availableTickets;
-    }
+        $soldTickets = $this->tickets->filter(
+            fn(Ticket $t) => $t->getPaymentStatus() === PaymentStatus::PAID
+        )->count();
 
-    public function setAvailableTickets(int $availableTickets): self
-    {
-        $this->availableTickets = $availableTickets;
-        return $this;
+        return $this->totalTickets - $soldTickets;
     }
 
     public function getTotalTickets(): int

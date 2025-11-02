@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Ticket;
 use App\Enum\PaymentStatus;
-use App\Repository\TicketRepository;
 use App\Service\QrCodeService;
 use App\Service\TicketEmailService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -92,9 +91,13 @@ class StripeWebhookController extends AbstractController
         $qrCode = $this->qrCodeService->generateQrCode($ticket);
         $ticket->setQrCode($qrCode);
 
-        // Décrémenter les places disponibles
+        // Mettre à jour les places disponibles
         if ($event = $ticket->getEvent()) {
-            $event->setAvailableTickets($event->getAvailableTickets() - 1);
+            $event->getAvailableTickets();
+        }
+
+        if ($formation = $ticket->getFormation()) {
+            $formation->getAvailableTickets();
         }
 
         $this->entityManager->flush();

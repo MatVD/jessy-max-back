@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
+use App\Enum\PaymentStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -241,7 +242,10 @@ class Formation
 
     public function getAvailableTickets(): int
     {
-        $soldTickets = $this->tickets->filter(fn(Ticket $t) => $t->getPaymentStatus() === \App\Enum\PaymentStatus::PAID)->count();
+        $soldTickets = $this->tickets->filter(
+            fn(Ticket $t) => $t->getPaymentStatus() === PaymentStatus::PAID
+        )->count();
+        
         return $this->maxParticipants - $soldTickets;
     }
 }
