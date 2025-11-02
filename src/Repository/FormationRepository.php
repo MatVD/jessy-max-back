@@ -43,4 +43,20 @@ class FormationRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve une formation par ses tickets payés
+     */
+    public function findPaidByFormation(string $formationId): array
+    {
+        return $this->createQueryBuilder('f')
+            ->leftJoin('f.tickets', 't')
+            ->addSelect('t')
+            ->where('f.id = :formationId')
+            ->andWhere('t.paymentStatus = :status')
+            ->setParameter('formationId', $formationId)
+            ->setParameter('status', 'PAID')
+            ->getQuery()
+            ->getResult();
+    }
 }

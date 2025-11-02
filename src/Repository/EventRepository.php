@@ -43,4 +43,20 @@ class EventRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve un événement par ses tickets payés
+     */
+    public function findPaidByEvent(string $eventId): array
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.tickets', 't')
+            ->addSelect('t')
+            ->where('e.id = :eventId')
+            ->andWhere('t.paymentStatus = :status')
+            ->setParameter('eventId', $eventId)
+            ->setParameter('status', 'PAID')
+            ->getQuery()
+            ->getResult();
+    }
 }

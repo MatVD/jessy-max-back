@@ -6,134 +6,117 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
-use App\Repository\TicketRepository;
-use App\State\TicketProcessor;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
+use App\Enum\PaymentStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
-#[ORM\Entity(repositoryClass: TicketRepository::class)]
-#[ORM\Table(name: 'tickets')]
-#[ORM\Index(name: 'idx_tickets_event', columns: ['event_id'])]
-#[ORM\Index(name: 'idx_tickets_formation', columns: ['formation_id'])]
-#[ORM\Index(name: 'idx_tickets_customer_email', columns: ['customer_email'])]
-#[ORM\Index(name: 'idx_tickets_qr_code', columns: ['qr_code'])]
+#[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
-        new Get(normalizationContext: ['groups' => ['ticket:read', 'ticket:detail']]),
-        new GetCollection(normalizationContext: ['groups' => ['ticket:read']]),
-        new Post(
-            denormalizationContext: ['groups' => ['ticket:write']],
-            normalizationContext: ['groups' => ['ticket:read', 'ticket:detail']],
-            processor: TicketProcessor::class
-        ),
-    ],
-    order: ['purchasedAt' => 'DESC'],
-    paginationEnabled: true,
-    paginationItemsPerPage: 30,
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Patch(),
+        new Delete()
+    ]
 )]
-#[ApiFilter(SearchFilter::class, properties: ['customerEmail' => 'exact'])]
 class Ticket
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
-    #[ORM\GeneratedValue(strategy: 'CUSTOM')]
-    #[ORM\CustomIdGenerator(class: 'doctrine.uuid_generator')]
-    #[Groups(['ticket:read', 'refund:read'])]
-    private ?Uuid $id = null;
+    private Uuid $id;
 
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'tickets')]
-    #[ORM\JoinColumn(name: 'event_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
-    #[Groups(['ticket:read', 'ticket:write'])]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Event $event = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'tickets')]
-    #[ORM\JoinColumn(name: 'formation_id', referencedColumnName: 'id', onDelete: 'CASCADE', nullable: true)]
-    #[Groups(['ticket:read', 'ticket:write'])]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Formation $formation = null;
 
-    #[ORM\Column(name: 'customer_name', length: 255)]
-    #[Assert\NotBlank(message: 'The customer name cannot be blank.')]
-    #[Assert\Length(max: 255, maxMessage: 'The customer name cannot be longer than {{ limit }} characters.')]
-    #[Groups(['ticket:read', 'ticket:write', 'refund:read'])]
-    private ?string $customerName = null;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tickets')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?User $user = null;
 
-    #[ORM\Column(name: 'customer_email', length: 255)]
-    #[Assert\NotBlank(message: 'The customer email cannot be blank.')]
-    #[Assert\Email(message: 'The email "{{ value }}" is not a valid email.')]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    #[Groups(['ticket:read', 'ticket:write', 'refund:read'])]
-    private ?string $customerEmail = null;
+    private string $customerName;
 
-    #[ORM\Column(type: Types::INTEGER)]
-    #[Assert\NotNull(message: 'The quantity cannot be null.')]
-    #[Assert\Positive(message: 'The quantity must be at least 1.')]
-    #[Assert\LessThanOrEqual(10, message: 'The quantity cannot exceed 10 tickets per order.')]
-    #[Groups(['ticket:read', 'ticket:write', 'refund:read'])]
-    private ?int $quantity = null;
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Email]
+    private string $customerEmail;
 
-    #[ORM\Column(name: 'total_price', type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Assert\NotNull(message: 'The total price cannot be null.')]
-    #[Assert\PositiveOrZero(message: 'The total price must be positive or zero.')]
-    #[Groups(['ticket:read', 'refund:read'])]
-    private ?string $totalPrice = null;
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
+    private string $totalPrice;
 
-    #[ORM\Column(name: 'payment_status', length: 50)]
-    #[Assert\Choice(choices: ['pending', 'completed', 'refunded'], message: 'Invalid payment status.')]
-    #[Groups(['ticket:read', 'ticket:detail'])]
-    private string $paymentStatus = 'pending';
+    #[ORM\Column(type: 'string', enumType: PaymentStatus::class)]
+    private PaymentStatus $paymentStatus;
 
-    #[ORM\Column(name: 'qr_code', length: 255, unique: true)]
-    #[Groups(['ticket:read', 'ticket:detail'])]
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $stripeCheckoutSessionId = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $stripePaymentIntentId = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
     private ?string $qrCode = null;
 
-    #[ORM\Column(name: 'purchased_at', type: Types::DATETIME_IMMUTABLE)]
-    #[Groups(['ticket:read', 'ticket:detail'])]
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $usedAt = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    private \DateTimeImmutable $createdAt;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $purchasedAt = null;
 
-    #[ORM\Column(name: 'created_at', type: Types::DATETIME_IMMUTABLE)]
-    #[Groups(['ticket:read', 'ticket:detail'])]
-    private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\OneToMany(targetEntity: RefundRequest::class, mappedBy: 'ticket', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: RefundRequest::class, mappedBy: 'ticket')]
     private Collection $refundRequests;
 
     public function __construct()
     {
+        $this->id = Uuid::v4();
         $this->refundRequests = new ArrayCollection();
+        $this->createdAt = new \DateTimeImmutable();
+        $this->paymentStatus = PaymentStatus::PENDING;
     }
 
     #[ORM\PrePersist]
-    public function setCreatedAtValue(): void
+    #[ORM\PreUpdate]
+    public function validateEventOrFormation(): void
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->purchasedAt = new \DateTimeImmutable();
+        if (($this->event === null && $this->formation === null) ||
+            ($this->event !== null && $this->formation !== null)
+        ) {
+            throw new \LogicException('Un ticket doit être lié soit à un événement, soit à une formation, mais pas les deux.');
+        }
     }
 
-    /**
-     * Constraint de validation personnalisée : un ticket doit avoir soit event_id soit formation_id, jamais les deux
-     */
     #[Assert\Callback]
-    public function validate(\Symfony\Component\Validator\Context\ExecutionContextInterface $context): void
+    public function validate(ExecutionContextInterface $context): void
     {
-        // Contrainte XOR : exactement un des deux doit être défini
-        if (($this->event === null && $this->formation === null) || ($this->event !== null && $this->formation !== null)) {
-            $context->buildViolation('A ticket must be associated with either an event or a formation, but not both.')
+        if (($this->event === null && $this->formation === null) ||
+            ($this->event !== null && $this->formation !== null)
+        ) {
+            $context->buildViolation('Un ticket doit être lié soit à un événement, soit à une formation, mais pas les deux.')
                 ->atPath('event')
                 ->addViolation();
         }
     }
 
-    // Getters and Setters
-
-    public function getId(): ?Uuid
+    public function getId(): Uuid
     {
         return $this->id;
     }
@@ -143,7 +126,7 @@ class Ticket
         return $this->event;
     }
 
-    public function setEvent(?Event $event): static
+    public function setEvent(?Event $event): self
     {
         $this->event = $event;
         return $this;
@@ -154,64 +137,86 @@ class Ticket
         return $this->formation;
     }
 
-    public function setFormation(?Formation $formation): static
+    public function setFormation(?Formation $formation): self
     {
         $this->formation = $formation;
         return $this;
     }
 
-    public function getCustomerName(): ?string
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        return $this;
+    }
+
+    public function getCustomerName(): string
     {
         return $this->customerName;
     }
 
-    public function setCustomerName(string $customerName): static
+    public function setCustomerName(string $customerName): self
     {
         $this->customerName = $customerName;
         return $this;
     }
 
-    public function getCustomerEmail(): ?string
+    public function getCustomerEmail(): string
     {
         return $this->customerEmail;
     }
 
-    public function setCustomerEmail(string $customerEmail): static
+    public function setCustomerEmail(string $customerEmail): self
     {
         $this->customerEmail = $customerEmail;
         return $this;
     }
 
-    public function getQuantity(): ?int
-    {
-        return $this->quantity;
-    }
-
-    public function setQuantity(int $quantity): static
-    {
-        $this->quantity = $quantity;
-        return $this;
-    }
-
-    public function getTotalPrice(): ?string
+    public function getTotalPrice(): string
     {
         return $this->totalPrice;
     }
 
-    public function setTotalPrice(string $totalPrice): static
+    public function setTotalPrice(string $totalPrice): self
     {
         $this->totalPrice = $totalPrice;
         return $this;
     }
 
-    public function getPaymentStatus(): string
+    public function getPaymentStatus(): PaymentStatus
     {
         return $this->paymentStatus;
     }
 
-    public function setPaymentStatus(string $paymentStatus): static
+    public function setPaymentStatus(PaymentStatus $paymentStatus): self
     {
         $this->paymentStatus = $paymentStatus;
+        return $this;
+    }
+
+    public function getStripeCheckoutSessionId(): ?string
+    {
+        return $this->stripeCheckoutSessionId;
+    }
+
+    public function setStripeCheckoutSessionId(?string $stripeCheckoutSessionId): self
+    {
+        $this->stripeCheckoutSessionId = $stripeCheckoutSessionId;
+        return $this;
+    }
+
+    public function getStripePaymentIntentId(): ?string
+    {
+        return $this->stripePaymentIntentId;
+    }
+
+    public function setStripePaymentIntentId(?string $stripePaymentIntentId): self
+    {
+        $this->stripePaymentIntentId = $stripePaymentIntentId;
         return $this;
     }
 
@@ -220,10 +225,26 @@ class Ticket
         return $this->qrCode;
     }
 
-    public function setQrCode(string $qrCode): static
+    public function setQrCode(?string $qrCode): self
     {
         $this->qrCode = $qrCode;
         return $this;
+    }
+
+    public function getUsedAt(): ?\DateTimeImmutable
+    {
+        return $this->usedAt;
+    }
+
+    public function setUsedAt(?\DateTimeImmutable $usedAt): self
+    {
+        $this->usedAt = $usedAt;
+        return $this;
+    }
+
+    public function getCreatedAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 
     public function getPurchasedAt(): ?\DateTimeImmutable
@@ -231,37 +252,25 @@ class Ticket
         return $this->purchasedAt;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable
+    public function setPurchasedAt(?\DateTimeImmutable $purchasedAt): self
     {
-        return $this->createdAt;
+        $this->purchasedAt = $purchasedAt;
+        return $this;
     }
 
-    /**
-     * @return Collection<int, RefundRequest>
-     */
     public function getRefundRequests(): Collection
     {
         return $this->refundRequests;
     }
 
-    public function addRefundRequest(RefundRequest $refundRequest): static
+    public function isUsed(): bool
     {
-        if (!$this->refundRequests->contains($refundRequest)) {
-            $this->refundRequests->add($refundRequest);
-            $refundRequest->setTicket($this);
-        }
-
-        return $this;
+        return $this->usedAt !== null;
     }
 
-    public function removeRefundRequest(RefundRequest $refundRequest): static
+    public function markAsUsed(): self
     {
-        if ($this->refundRequests->removeElement($refundRequest)) {
-            if ($refundRequest->getTicket() === $this) {
-                $refundRequest->setTicket(null);
-            }
-        }
-
+        $this->usedAt = new \DateTimeImmutable();
         return $this;
     }
 }
