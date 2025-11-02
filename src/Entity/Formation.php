@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -25,59 +26,73 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(),
         new Patch(),
         new Delete()
-    ]
+    ],
+    normalizationContext: ['groups' => ['formation:read']],
+    denormalizationContext: ['groups' => ['formation:write']]
 )]
 class Formation
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
+    #[Groups(['formation:read', 'location:read'])]
     private Uuid $id;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private string $description;
 
     #[ORM\Column(length: 500)]
     #[Assert\NotBlank]
     #[Assert\Url]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private string $imageUrl;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotNull]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private \DateTimeImmutable $startDate;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private string $duration;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private string $price;
 
     #[ORM\ManyToOne(targetEntity: Location::class, inversedBy: 'formations')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['formation:read', 'formation:write'])]
     private ?Location $location = null;
 
     #[ORM\Column(type: Types::INTEGER)]
     #[Assert\NotNull]
     #[Assert\Positive]
+    #[Groups(['formation:read', 'formation:write'])]
     private int $maxParticipants;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
+    #[Groups(['formation:read', 'formation:write', 'location:read'])]
     private string $instructor;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['formation:read'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['formation:read'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'formation')]
@@ -85,6 +100,7 @@ class Formation
 
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'formations')]
     #[ORM\JoinTable(name: 'formation_category')]
+    #[Groups(['formation:read', 'formation:write'])]
     private Collection $categories;
 
     public function __construct()
@@ -245,7 +261,7 @@ class Formation
         $soldTickets = $this->tickets->filter(
             fn(Ticket $t) => $t->getPaymentStatus() === PaymentStatus::PAID
         )->count();
-        
+
         return $this->maxParticipants - $soldTickets;
     }
 }

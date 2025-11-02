@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -25,50 +26,62 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(),
         new Patch(),
         new Delete()
-    ]
+    ],
+    normalizationContext: ['groups' => ['event:read']],
+    denormalizationContext: ['groups' => ['event:write']]
 )]
 class Event
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
+    #[Groups(['event:read', 'location:read'])]
     private Uuid $id;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
+    #[Groups(['event:read', 'event:write', 'location:read'])]
     private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
+    #[Groups(['event:read', 'event:write', 'location:read'])]
     private string $description;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotNull]
+    #[Groups(['event:read', 'event:write', 'location:read'])]
     private \DateTimeImmutable $date;
 
     #[ORM\ManyToOne(targetEntity: Location::class, inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['event:read', 'event:write'])]
     private ?Location $location = null;
 
     #[ORM\Column(length: 500)]
     #[Assert\NotBlank]
     #[Assert\Url]
+    #[Groups(['event:read', 'event:write', 'location:read'])]
     private string $imageUrl;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
+    #[Groups(['event:read', 'event:write', 'location:read'])]
     private string $price;
 
     #[ORM\Column(type: Types::INTEGER)]
     #[Assert\NotNull]
     #[Assert\Positive]
+    #[Groups(['event:read', 'event:write'])]
     private int $totalTickets;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['event:read'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['event:read'])]
     private \DateTimeImmutable $updatedAt;
 
     #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'event')]
@@ -76,6 +89,7 @@ class Event
 
     #[ORM\ManyToMany(targetEntity: Category::class, inversedBy: 'events')]
     #[ORM\JoinTable(name: 'event_category')]
+    #[Groups(['event:read', 'event:write'])]
     private Collection $categories;
 
     public function __construct()
