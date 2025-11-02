@@ -101,8 +101,6 @@ class QrCodeService
     /**
      * Génère les données PNG brutes du QR code
      * Utile pour pièce jointe email ou téléchargement
-     * 
-     * Installation requise : composer require endroid/qr-code
      */
     public function generateQrCodePng(string $qrCodeData): string
     {
@@ -122,8 +120,6 @@ class QrCodeService
 
     /**
      * Génère un QR code SVG (vectoriel, plus léger)
-     * 
-     * Installation requise : composer require endroid/qr-code
      */
     public function generateQrCodeSvg(string $qrCodeData): string
     {

@@ -16,7 +16,8 @@ class TicketEmailService
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly QrCodeService $qrCodeService,
-        private readonly string $fromEmail = 'noreply@jessymax.com'
+        private readonly string $fromEmail = 'noreply@jessymax.com',
+        private readonly string $frontendUrl
     ) {}
 
     /**
@@ -172,7 +173,7 @@ class TicketEmailService
         </p>
         
         <div style="text-align: center;">
-            <a href="https://jessymax.com/mon-ticket/{$ticket->getId()->toRfc4122()}" class="button">
+            <a href="{$this->frontendUrl}/mon-ticket/{$ticket->getId()->toRfc4122()}" class="button">
                 Voir mon ticket en ligne
             </a>
         </div>
