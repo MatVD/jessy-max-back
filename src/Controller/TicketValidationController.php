@@ -29,7 +29,7 @@ class TicketValidationController extends AbstractController
     public function validateTicket(Request $request): JsonResponse
     {
         $this->denyAccessUnlessGranted('ROLE_TICKET_VALIDATOR');
-        
+
         $data = json_decode($request->getContent(), true);
         $qrCode = $data['qrCode'] ?? null;
 
@@ -174,8 +174,8 @@ class TicketValidationController extends AbstractController
         $usedTickets = array_filter($tickets, fn(Ticket $t) => $t->isUsed());
 
         $totalRevenue = array_reduce(
-            $tickets, 
-            fn($sum, Ticket $t) => $sum + (float) $t->getTotalPrice(), 
+            $tickets,
+            fn($sum, Ticket $t) => $sum + (float) $t->getTotalPrice(),
             0
         );
 
@@ -184,8 +184,32 @@ class TicketValidationController extends AbstractController
             'totalUsed' => count($usedTickets),
             'remainingToUse' => count($tickets) - count($usedTickets),
             'totalRevenue' => number_format($totalRevenue, 2),
-            'averageTicketPrice' => count($tickets) > 0 
-                ? number_format($totalRevenue / count($tickets), 2) 
+            'averageTicketPrice' => count($tickets) > 0
+                ? number_format($totalRevenue / count($tickets), 2)
+                : 0
+        ]);
+    }
+
+    /**
+     * Statistiques d'une formation
+     */
+    #[Route('/formation/{formationId}/stats', name: 'formation_stats', methods: ['GET'])]
+    public function formationStats(string $formationId): JsonResponse
+    {
+        $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByFormation($formationId);
+        $usedTickets = array_filter($tickets, fn(Ticket $t) => $t->isUsed());
+        $totalRevenue = array_reduce(
+            $tickets,
+            fn($sum, Ticket $t) => $sum + (float) $t->getTotalPrice(),
+            0
+        );
+        return $this->json([
+            'totalSold' => count($tickets),
+            'totalUsed' => count($usedTickets),
+            'remainingToUse' => count($tickets) - count($usedTickets),
+            'totalRevenue' => number_format($totalRevenue, 2),
+            'averageTicketPrice' => count($tickets) > 0
+                ? number_format($totalRevenue / count($tickets), 2)
                 : 0
         ]);
     }

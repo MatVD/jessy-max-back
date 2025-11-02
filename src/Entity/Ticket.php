@@ -15,6 +15,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
@@ -96,9 +97,22 @@ class Ticket
     #[ORM\PreUpdate]
     public function validateEventOrFormation(): void
     {
-        if (($this->event === null && $this->formation === null) || 
-            ($this->event !== null && $this->formation !== null)) {
+        if (($this->event === null && $this->formation === null) ||
+            ($this->event !== null && $this->formation !== null)
+        ) {
             throw new \LogicException('Un ticket doit être lié soit à un événement, soit à une formation, mais pas les deux.');
+        }
+    }
+
+    #[Assert\Callback]
+    public function validate(ExecutionContextInterface $context): void
+    {
+        if (($this->event === null && $this->formation === null) ||
+            ($this->event !== null && $this->formation !== null)
+        ) {
+            $context->buildViolation('Un ticket doit être lié soit à un événement, soit à une formation, mais pas les deux.')
+                ->atPath('event')
+                ->addViolation();
         }
     }
 
