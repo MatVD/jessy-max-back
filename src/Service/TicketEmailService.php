@@ -13,12 +13,15 @@ use Symfony\Component\Mime\Email;
  */
 class TicketEmailService
 {
+    private string $frontendUrl;
+    
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly QrCodeService $qrCodeService,
         private readonly string $fromEmail = 'noreply@jessymax.com',
-        private readonly string $frontendUrl
-    ) {}
+    ) {
+        $this->frontendUrl = $_ENV['FRONTEND_URL'] ?? 'https://jessymax.com';
+    }
 
     /**
      * Envoie le ticket par email avec le QR code en pièce jointe
