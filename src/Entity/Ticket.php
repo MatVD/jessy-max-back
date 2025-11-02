@@ -6,8 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Patch;
 use App\Enum\PaymentStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -24,7 +24,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
         new Get(),
         new GetCollection(),
         new Post(),
-        new Put(),
+        new Patch(),
         new Delete()
     ]
 )]

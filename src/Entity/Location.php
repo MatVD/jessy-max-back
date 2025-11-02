@@ -16,15 +16,6 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
-#[ApiResource(
-    operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Put(),
-        new Delete()
-    ]
-)]
 class Location
 {
     #[ORM\Id]

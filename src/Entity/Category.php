@@ -17,15 +17,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity]
 #[ORM\UniqueConstraint(name: 'UNIQ_CATEGORY_NAME', columns: ['name'])]
-#[ApiResource(
-    operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Put(),
-        new Delete()
-    ]
-)]
 class Category
 {
     #[ORM\Id]
