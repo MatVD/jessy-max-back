@@ -31,7 +31,7 @@ class TicketTest extends TestCase
         $ticket->setUser($user);
         $ticket->setCustomerName('John Doe');
         $ticket->setCustomerEmail('john@example.com');
-        $ticket->setTotalPrice('50.00');
+        $ticket->setPrice('50.00');
         $ticket->setPaymentStatus(PaymentStatus::PAID);
         $ticket->setStripeCheckoutSessionId('sess_123');
         $ticket->setStripePaymentIntentId('pi_123');
@@ -44,7 +44,7 @@ class TicketTest extends TestCase
         $this->assertEquals($user, $ticket->getUser());
         $this->assertEquals('John Doe', $ticket->getCustomerName());
         $this->assertEquals('john@example.com', $ticket->getCustomerEmail());
-        $this->assertEquals('50.00', $ticket->getTotalPrice());
+        $this->assertEquals('50.00', $ticket->getPrice());
         $this->assertEquals(PaymentStatus::PAID, $ticket->getPaymentStatus());
         $this->assertEquals('sess_123', $ticket->getStripeCheckoutSessionId());
         $this->assertEquals('pi_123', $ticket->getStripePaymentIntentId());

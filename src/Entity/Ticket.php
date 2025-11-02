@@ -59,7 +59,7 @@ class Ticket
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
-    private string $totalPrice;
+    private string $price;
 
     #[ORM\Column(type: 'string', enumType: PaymentStatus::class)]
     private PaymentStatus $paymentStatus;
@@ -176,14 +176,14 @@ class Ticket
         return $this;
     }
 
-    public function getTotalPrice(): string
+    public function getPrice(): string
     {
-        return $this->totalPrice;
+        return $this->price;
     }
 
-    public function setTotalPrice(string $totalPrice): self
+    public function setPrice(string $price): self
     {
-        $this->totalPrice = $totalPrice;
+        $this->price = $price;
         return $this;
     }
 

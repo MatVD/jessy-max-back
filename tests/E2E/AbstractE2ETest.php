@@ -79,7 +79,7 @@ abstract class AbstractE2ETest extends WebTestCase
         $this->testTicket->setUser($this->testUser);
         $this->testTicket->setCustomerName('Bob Durand');
         $this->testTicket->setCustomerEmail('bob.durand@example.com');
-        $this->testTicket->setTotalPrice('100.00');
+        $this->testTicket->setPrice('100.00');
         $this->testTicket->setPaymentStatus(PaymentStatus::PAID);
         $this->testTicket->setPurchasedAt(new \DateTimeImmutable());
 

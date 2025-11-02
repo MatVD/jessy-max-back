@@ -47,7 +47,7 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
                             'name' => $product->getTitle(),
                             'description' => substr($product->getDescription(), 0, 200),
                         ],
-                        'unit_amount' => (int)($data->getTotalPrice() * 100), // Stripe utilise les centimes
+                        'unit_amount' => (int)($data->getPrice() * 100), // Stripe utilise les centimes
                     ],
                     'quantity' => 1,
                 ]],

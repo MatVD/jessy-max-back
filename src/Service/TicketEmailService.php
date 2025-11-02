@@ -154,7 +154,7 @@ class TicketEmailService
             </div>
             <div class="detail-row">
                 <span class="detail-label">Prix :</span>
-                <span>{$ticket->getTotalPrice()} €</span>
+                <span>{$ticket->getPrice()} €</span>
             </div>
             <div class="detail-row">
                 <span class="detail-label">Référence :</span>

@@ -156,7 +156,7 @@ class TicketValidationController extends AbstractController
                 'id' => $t->getId()->toRfc4122(),
                 'customerName' => $t->getCustomerName(),
                 'customerEmail' => $t->getCustomerEmail(),
-                'totalPrice' => $t->getTotalPrice(),
+                'totalPrice' => $t->getPrice(),
                 'purchasedAt' => $t->getPurchasedAt()?->format('Y-m-d H:i:s'),
                 'isUsed' => $t->isUsed(),
                 'usedAt' => $t->getUsedAt()?->format('Y-m-d H:i:s')
@@ -175,7 +175,7 @@ class TicketValidationController extends AbstractController
 
         $totalRevenue = array_reduce(
             $tickets,
-            fn($sum, Ticket $t) => $sum + (float) $t->getTotalPrice(),
+            fn($sum, Ticket $t) => $sum + (float) $t->getPrice(),
             0
         );
 
@@ -200,7 +200,7 @@ class TicketValidationController extends AbstractController
         $usedTickets = array_filter($tickets, fn(Ticket $t) => $t->isUsed());
         $totalRevenue = array_reduce(
             $tickets,
-            fn($sum, Ticket $t) => $sum + (float) $t->getTotalPrice(),
+            fn($sum, Ticket $t) => $sum + (float) $t->getPrice(),
             0
         );
         return $this->json([

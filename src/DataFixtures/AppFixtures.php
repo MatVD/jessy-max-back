@@ -132,7 +132,6 @@ class AppFixtures extends Fixture
                 ->setImageUrl($eventData['imageUrl'])
                 ->setPrice($eventData['price'])
                 ->setTotalTickets($eventData['totalTickets'])
-                ->setAvailableTickets($eventData['totalTickets'])
                 ->setLocation($eventData['location']);
             foreach ($eventData['categories'] as $cat) {
                 $event->addCategory($cat);
@@ -233,7 +232,7 @@ class AppFixtures extends Fixture
             $ticket->setUser($ticketData['user']);
             $ticket->setCustomerName($ticketData['customerName']);
             $ticket->setCustomerEmail($ticketData['customerEmail']);
-            $ticket->setTotalPrice($ticketData['totalPrice']);
+            $ticket->setPrice($ticketData['totalPrice']);
             $ticket->setPaymentStatus($ticketData['paymentStatus']);
             $manager->persist($ticket);
             $tickets[] = $ticket;
