@@ -8,6 +8,7 @@ use App\Entity\RefundRequest;
 use App\Repository\RefundRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use App\Enum\PaymentStatus;
 
 /**
  * Processor pour gérer la création de demandes de remboursement
@@ -36,7 +37,7 @@ class RefundRequestProcessor implements ProcessorInterface
             }
 
             // Vérifier que le ticket n'est pas déjà remboursé
-            if ($data->getTicket()->getPaymentStatus() === 'refunded') {
+            if ($data->getTicket()->getPaymentStatus() === PaymentStatus::REFUNDED) {
                 throw new BadRequestHttpException('This ticket has already been refunded.');
             }
         }
