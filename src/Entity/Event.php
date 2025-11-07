@@ -178,6 +178,7 @@ class Event
         return $this;
     }
 
+    #[Groups(['event:read'])]
     public function getAvailableTickets(): int
     {
         $soldTickets = $this->tickets->filter(
