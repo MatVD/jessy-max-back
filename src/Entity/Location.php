@@ -29,22 +29,19 @@ class Location
     #[Groups(['location:read', 'location:write', 'event:read', 'formation:read', 'event:write', 'formation:write'])]
     private string $name;
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Assert\NotBlank]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Groups(['location:read', 'location:write', 'event:read', 'formation:read', 'event:write', 'formation:write'])]
-    private string $address;
+    private ?string $address = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 8)]
-    #[Assert\NotNull]
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 8, nullable: true)]
     #[Assert\Range(min: -90, max: 90)]
     #[Groups(['location:read', 'location:write', 'event:read', 'formation:read', 'event:write', 'formation:write'])]
-    private string $latitude;
+    private ?string $latitude = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 8)]
-    #[Assert\NotNull]
+    #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 8, nullable: true)]
     #[Assert\Range(min: -180, max: 180)]
     #[Groups(['location:read', 'location:write', 'event:read', 'formation:read', 'event:write', 'formation:write'])]
-    private string $longitude;
+    private ?string $longitude = null;
 
     #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'location')]
     #[Groups(['location:read'])]
