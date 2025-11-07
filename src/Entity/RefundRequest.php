@@ -13,6 +13,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity]
 #[ApiResource(
@@ -22,45 +23,57 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(),
         new Patch(),
         new Delete()
-    ]
+    ],
+    normalizationContext: ['groups' => ['refund_request:read']],
+    denormalizationContext: ['groups' => ['refund_request:write']]
 )]
 class RefundRequest
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
+    #[Groups(['refund_request:read'])]
     private Uuid $id;
 
     #[ORM\ManyToOne(targetEntity: Ticket::class, inversedBy: 'refundRequests')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private Ticket $ticket;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private ?User $user = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private string $customerName;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private string $customerEmail;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private string $reason;
 
     #[ORM\Column(type: 'string', enumType: RefundStatus::class)]
+    #[Assert\NotBlank]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private RefundStatus $status;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private string $refundAmount;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Groups(['refund_request:read', 'refund_request:write'])]
     private ?string $stripeRefundId = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
