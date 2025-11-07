@@ -30,6 +30,8 @@ class AppFixtures extends Fixture
             $categories[$catData['name']] = $cat;
         }
 
+        $manager->flush();
+
         // Lieux
         $locations = [];
         foreach (
@@ -50,6 +52,8 @@ class AppFixtures extends Fixture
             $locations[$locData['name']] = $loc;
         }
 
+        $manager->flush();
+
         // Utilisateurs
         $users = [];
         foreach (
@@ -69,6 +73,8 @@ class AppFixtures extends Fixture
             $manager->persist($user);
             $users[$userData['email']] = $user;
         }
+
+        $manager->flush();
 
         // Événements
         $eventsData = [
