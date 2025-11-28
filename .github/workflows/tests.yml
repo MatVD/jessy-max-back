@@ -1,0 +1,89 @@
+name: Tests CI/CD
+
+on:
+    push:
+        branches: [main, develop, "**"]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        services:
+            mysql:
+                image: mysql:8.0
+                env:
+                    MYSQL_ROOT_PASSWORD: rootpassword
+                    MYSQL_DATABASE: jessy_max_test
+                options: >-
+                    --health-cmd="mysqladmin ping"
+                    --health-interval=10s
+                    --health-timeout=5s
+                    --health-retries=3
+                ports:
+                    - 3306:3306
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.2"
+                  extensions: ctype, iconv, mysql
+                  coverage: pcov
+
+            - name: Validate composer.json and composer.lock
+              run: composer validate --strict
+
+            - name: Cache Composer packages
+              id: composer-cache
+              uses: actions/cache@v3
+              with:
+                  path: vendor
+                  key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-php-
+
+            - name: Install dependencies
+              run: composer install --prefer-dist --no-progress
+
+            - name: Create .env.test.local
+              run: |
+                  cp .env .env.test.local
+                  echo "DATABASE_URL=${{ secrets.DATABASE_URL_TEST }}" >> .env.test.local
+                  echo "APP_ENV=test" >> .env.test.local
+                  echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env.test.local
+                  echo "JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}" >> .env.test.local
+                  echo "JWT_QRCODE_SECRET=${{ secrets.JWT_QRCODE_SECRET }}" >> .env.test.local
+
+            - name: Generate JWT keys
+              run: |
+                  mkdir -p config/jwt
+                  openssl genrsa -out config/jwt/private.pem 4096
+                  openssl rsa -in config/jwt/private.pem -pubout -out config/jwt/public.pem
+
+            - name: Wait for MySQL
+              run: |
+                  until mysql -h 127.0.0.1 -u root -prootpassword -e "SELECT 1" &> /dev/null; do
+                    echo "Waiting for MySQL..."
+                    sleep 1
+                  done
+
+            - name: Run database migrations
+              run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+              env:
+                  DATABASE_URL: mysql://root:rootpassword@127.0.0.1:3306/jessy_max_test
+
+            - name: Run PHPUnit tests
+              run: ./vendor/bin/phpunit
+              env:
+                  DATABASE_URL: mysql://root:rootpassword@127.0.0.1:3306/jessy_max_test
+
+            - name: Upload coverage reports
+              uses: codecov/codecov-action@v3
+              if: always()
+              with:
+                  files: ./coverage.xml
+                  fail_ci_if_error: false
