@@ -47,7 +47,7 @@ jobs:
                       ${{ runner.os }}-php-
 
             - name: Install dependencies
-              run: composer install --prefer-dist --no-progress
+              run: composer install --prefer-dist --no-progress --no-scripts
 
             - name: Create .env.test.local
               run: |
@@ -65,6 +65,9 @@ jobs:
                   mkdir -p config/jwt
                   openssl genrsa -out config/jwt/private.pem 4096
                   openssl rsa -in config/jwt/private.pem -pubout -out config/jwt/public.pem
+
+            - name: Run Composer scripts
+              run: composer run-script auto-scripts --no-interaction
 
             - name: Wait for MySQL
               run: |
