@@ -57,6 +57,7 @@ jobs:
                   echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env.test.local
                   echo "JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}" >> .env.test.local
                   echo "JWT_QRCODE_SECRET=${{ secrets.JWT_QRCODE_SECRET }}" >> .env.test.local
+                  echo "DEFAULT_URI=https://localhost" >> .env.test.local 
 
             - name: Generate JWT keys
               run: |
