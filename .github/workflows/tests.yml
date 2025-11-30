@@ -56,6 +56,9 @@ jobs:
                   echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env.test.local
                   echo "JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}" >> .env.test.local
                   echo "JWT_QRCODE_SECRET=${{ secrets.JWT_QRCODE_SECRET }}" >> .env.test.local
+                  echo "MERCURE_JWT_SECRET=${{ secrets.MERCURE_JWT_SECRET }}" >> .env.test.local
+                  echo "STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}" >> .env.test.local
+                  echo "STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}" >> .env.test.local
 
             - name: Generate JWT keys
               run: |
