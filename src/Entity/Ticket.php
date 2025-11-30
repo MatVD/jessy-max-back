@@ -3,16 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\Patch;
 use App\Enum\PaymentStatus;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -20,66 +16,75 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-    operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Patch(),
-        new Delete()
-    ]
+    normalizationContext: ['groups' => ['ticket:read']],
+    denormalizationContext: ['groups' => ['ticket:write']],
 )]
 class Ticket
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
+    #[Groups(['ticket:read'])]
     private Uuid $id;
 
     #[ORM\ManyToOne(targetEntity: Event::class, inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?Event $event = null;
 
     #[ORM\ManyToOne(targetEntity: Formation::class, inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?Formation $formation = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?User $user = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private string $customerName;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Email]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private string $customerEmail;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
     #[Assert\PositiveOrZero]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private string $price;
 
     #[ORM\Column(type: 'string', enumType: PaymentStatus::class)]
+    #[Groups(['ticket:read'])]
     private PaymentStatus $paymentStatus;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Groups(['ticket:read'])]
     private ?string $stripeCheckoutSessionId = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Groups(['ticket:read'])]
     private ?string $stripePaymentIntentId = null;
 
     #[ORM\Column(length: 500, nullable: true)]
+    #[Groups(['ticket:read'])]
     private ?string $qrCode = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Groups(['ticket:read'])]
     private ?\DateTimeImmutable $usedAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
+    #[Groups(['ticket:read'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    #[Groups(['ticket:read', 'ticket:write'])]
     private ?\DateTimeImmutable $purchasedAt = null;
 
     #[ORM\OneToMany(targetEntity: RefundRequest::class, mappedBy: 'ticket')]
@@ -91,29 +96,6 @@ class Ticket
         $this->refundRequests = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
         $this->paymentStatus = PaymentStatus::PENDING;
-    }
-
-    #[ORM\PrePersist]
-    #[ORM\PreUpdate]
-    public function validateEventOrFormation(): void
-    {
-        if (($this->event === null && $this->formation === null) ||
-            ($this->event !== null && $this->formation !== null)
-        ) {
-            throw new \LogicException('Un ticket doit être lié soit à un événement, soit à une formation, mais pas les deux.');
-        }
-    }
-
-    #[Assert\Callback]
-    public function validate(ExecutionContextInterface $context): void
-    {
-        if (($this->event === null && $this->formation === null) ||
-            ($this->event !== null && $this->formation !== null)
-        ) {
-            $context->buildViolation('Un ticket doit être lié soit à un événement, soit à une formation, mais pas les deux.')
-                ->atPath('event')
-                ->addViolation();
-        }
     }
 
     public function getId(): Uuid
