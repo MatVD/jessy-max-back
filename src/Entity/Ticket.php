@@ -67,6 +67,12 @@ class Ticket
     #[Groups(['ticket:read'])]
     private ?string $stripeCheckoutSessionId = null;
 
+    /**
+     * URL de checkout Stripe (non persistée, utilisée uniquement lors de la création)
+     */
+    #[Groups(['ticket:read'])]
+    private ?string $stripeCheckoutUrl = null;
+
     #[ORM\Column(length: 500, nullable: true)]
     #[Groups(['ticket:read'])]
     private ?string $stripePaymentIntentId = null;
@@ -188,6 +194,17 @@ class Ticket
     public function setStripeCheckoutSessionId(?string $stripeCheckoutSessionId): self
     {
         $this->stripeCheckoutSessionId = $stripeCheckoutSessionId;
+        return $this;
+    }
+
+    public function getStripeCheckoutUrl(): ?string
+    {
+        return $this->stripeCheckoutUrl;
+    }
+
+    public function setStripeCheckoutUrl(?string $stripeCheckoutUrl): self
+    {
+        $this->stripeCheckoutUrl = $stripeCheckoutUrl;
         return $this;
     }
 

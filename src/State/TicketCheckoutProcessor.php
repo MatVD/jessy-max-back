@@ -28,11 +28,11 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
     {
         // Si c'est une création de ticket
         if ($data instanceof Ticket && $operation instanceof \ApiPlatform\Metadata\Post) {
-            
+
             // Déterminer le produit (Event ou Formation)
             $product = $data->getEvent() ?? $data->getFormation();
             $productType = $data->getEvent() ? 'event' : 'formation';
-            
+
             if (!$product) {
                 throw new \LogicException('Le ticket doit être lié à un événement ou une formation');
             }
@@ -62,8 +62,9 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
                 ],
             ]);
 
-            // Stocker l'ID de la session
+            // Stocker l'ID de la session et l'URL de checkout
             $data->setStripeCheckoutSessionId($checkoutSession->id);
+            $data->setStripeCheckoutUrl($checkoutSession->url);
             $data->setPaymentStatus(PaymentStatus::PENDING);
         }
 
