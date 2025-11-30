@@ -51,13 +51,11 @@ jobs:
 
             - name: Create .env.test.local
               run: |
-                  cp .env .env.test.local
+                  cp .env.test .env.test.local
                   echo "DATABASE_URL=${{ secrets.DATABASE_URL_TEST }}" >> .env.test.local
-                  echo "APP_ENV=test" >> .env.test.local
                   echo "APP_SECRET=${{ secrets.APP_SECRET }}" >> .env.test.local
                   echo "JWT_PASSPHRASE=${{ secrets.JWT_PASSPHRASE }}" >> .env.test.local
                   echo "JWT_QRCODE_SECRET=${{ secrets.JWT_QRCODE_SECRET }}" >> .env.test.local
-                  echo "DEFAULT_URI=https://localhost" >> .env.test.local 
 
             - name: Generate JWT keys
               run: |
