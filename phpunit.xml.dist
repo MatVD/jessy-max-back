@@ -2,7 +2,9 @@
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="tests/bootstrap.php"
-         colors="true">
+         colors="true"
+         failOnWarning="false"
+         failOnRisky="false">
     <php>
         <ini name="display_errors" value="1" />
         <ini name="error_reporting" value="-1" />
@@ -14,6 +16,7 @@
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>
+            <exclude>tests/E2E/AbstractE2ETest.php</exclude>
         </testsuite>
     </testsuites>
 </phpunit>
