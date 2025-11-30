@@ -58,6 +58,9 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
                 'success_url' => $this->frontendUrl . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
                 'cancel_url' => $this->frontendUrl . '/payment/cancel',
                 'customer_email' => $data->getCustomerEmail(),
+                'billing_address_collection'    => "auto",
+                'shipping_address_collection'   => ['allowed_countries' => ['FR', 'US']],
+                'allow_promotion_codes' => true,
                 'metadata' => [
                     'ticket_id' => $data->getId()->toRfc4122(),
                     'product_type' => $productType,
