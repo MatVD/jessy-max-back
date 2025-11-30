@@ -39,11 +39,14 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
 
             // Créer la Checkout Session Stripe
             $checkoutSession = Session::create([
-                'payment_method_types' => ['card'],
+                'submit_type'                   => 'pay',
+                'mode'                          => 'payment',
+                'payment_method_types'          => ['card', 'paypal'],
                 'line_items' => [[
                     'price_data' => [
                         'currency' => 'eur',
                         'product_data' => [
+                            'images' => [$product->getImageUrl()],
                             'name' => $product->getTitle(),
                             'description' => substr($product->getDescription(), 0, 200),
                         ],
