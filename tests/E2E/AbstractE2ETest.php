@@ -39,7 +39,7 @@ abstract class AbstractE2ETest extends WebTestCase
     {
         $schemaTool = new SchemaTool($this->em);
         $metadata = $this->em->getMetadataFactory()->getAllMetadata();
-        
+
         // Drop and recreate schema to ensure clean state
         $schemaTool->dropSchema($metadata);
         $schemaTool->createSchema($metadata);
