@@ -15,7 +15,7 @@ jobs:
                 image: mysql:8.0
                 env:
                     MYSQL_ROOT_PASSWORD: rootpassword
-                    MYSQL_DATABASE: jessy_max_test
+                    MYSQL_DATABASE: jessy_max
                 options: >-
                     --health-cmd="mysqladmin ping"
                     --health-interval=10s
@@ -76,12 +76,12 @@ jobs:
             - name: Run database migrations
               run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
               env:
-                  DATABASE_URL: mysql://root:rootpassword@127.0.0.1:3306/jessy_max_test
+                  DATABASE_URL: mysql://root:rootpassword@127.0.0.1:3306/jessy_max
 
             - name: Run PHPUnit tests
               run: ./vendor/bin/phpunit
               env:
-                  DATABASE_URL: mysql://root:rootpassword@127.0.0.1:3306/jessy_max_test
+                  DATABASE_URL: mysql://root:rootpassword@127.0.0.1:3306/jessy_max
 
             - name: Upload coverage reports
               uses: codecov/codecov-action@v3
