@@ -3,6 +3,12 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Controller\UserController;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -17,7 +23,22 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\UniqueConstraint(name: 'UNIQ_USER_EMAIL', columns: ['email'])]
 #[ApiResource(
     normalizationContext: ['groups' => ['user:read']],
-    denormalizationContext: ['groups' => ['user:write']]
+    denormalizationContext: ['groups' => ['user:write']],
+    operations: [
+        new Get(
+            uriTemplate: '/users/me',
+            controller: UserController::class,
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object == user",
+        ),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new Post(),
+        new Patch(
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object == user",
+        ),
+        new Delete(
+            security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object == user",
+        )
+    ]
 )]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
