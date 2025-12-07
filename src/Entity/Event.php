@@ -40,17 +40,17 @@ class Event
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    #[Groups(['event:read', 'event:write', 'location:read'])]
+    #[Groups(['event:read', 'event:write', 'location:read', 'ticket:read'])]
     private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
-    #[Groups(['event:read', 'event:write', 'location:read'])]
+    #[Groups(['event:read', 'event:write', 'location:read', 'ticket:read'])]
     private string $description;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Assert\NotNull]
-    #[Groups(['event:read', 'event:write', 'location:read'])]
+    #[Groups(['event:read', 'event:write', 'location:read', 'ticket:read'])]
     private \DateTimeImmutable $date;
 
     #[ORM\ManyToOne(targetEntity: Location::class, inversedBy: 'events')]

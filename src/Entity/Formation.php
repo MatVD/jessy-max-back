@@ -40,12 +40,12 @@ class Formation
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 255)]
-    #[Groups(['formation:read', 'formation:write', 'location:read'])]
+    #[Groups(['formation:read', 'formation:write', 'location:read', 'ticket:read'])]
     private string $title;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank]
-    #[Groups(['formation:read', 'formation:write', 'location:read'])]
+    #[Groups(['formation:read', 'formation:write', 'location:read', 'ticket:read'])]
     private string $description;
 
     #[ORM\Column(length: 500)]
