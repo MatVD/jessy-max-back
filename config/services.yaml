@@ -61,7 +61,13 @@ services:
         arguments:
             $persistProcessor: '@App\State\TicketProcessor.inner'
         tags:
-            - { name: 'api_platform.state_processor', priority: 200 }
+            - { name: "api_platform.state_processor", priority: 200 }
+
+    App\State\DonationCheckoutProcessor:
+        decorates: "api_platform.doctrine.orm.state.persist_processor"
+        arguments:
+            $stripeSecretKey: "%env(STRIPE_SECRET_KEY)%"
+            $frontendUrl: "%env(FRONTEND_URL)%"
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

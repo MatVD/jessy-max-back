@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Donation;
 use App\Entity\Ticket;
 use App\Enum\PaymentStatus;
 use App\Service\QrCodeService;
@@ -68,6 +69,18 @@ class StripeWebhookController extends AbstractController
 
     private function handleCheckoutCompleted($session): void
     {
+        $donationId = $session->metadata->donation_id ?? null;
+
+        if ($donationId) {
+            $donation = $this->entityManager->getRepository(Donation::class)
+                ->find(Uuid::fromString($donationId));
+
+            if ($donation) {
+                $donation->setStatus('completed');
+                $this->entityManager->flush();
+            }
+        }
+
         $ticketId = $session->metadata->ticket_id ?? null;
 
         if (!$ticketId) {
@@ -75,7 +88,8 @@ class StripeWebhookController extends AbstractController
             return;
         }
 
-        $ticket = $this->entityManager->getRepository(Ticket::class)->find(Uuid::fromString($ticketId));
+        $ticket = $this->entityManager->getRepository(Ticket::class)
+                ->find(Uuid::fromString($ticketId));
 
         if (!$ticket) {
             $this->logger->error('Stripe webhook: Ticket not found', ['ticket_id' => $ticketId]);
