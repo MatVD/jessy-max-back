@@ -135,10 +135,6 @@ class TicketEmailService
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎉 Votre Ticket est Prêt !</h1>
-    </div>
-    
     <div class="content">
         <p>Bonjour <strong>{$ticket->getCustomerName()}</strong>,</p>
         
