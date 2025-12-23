@@ -66,7 +66,7 @@ services:
     App\State\DonationCheckoutProcessor:
         decorates: "api_platform.doctrine.orm.state.persist_processor"
         arguments:
-            $decorated: "@App\\State\\DonationCheckoutProcessor.inner"
+            $decorated: '@App\State\DonationCheckoutProcessor.inner'
             $stripeSecretKey: "%stripe_secret_key%"
             $frontendUrl: "%frontend_url%"
         tags:
