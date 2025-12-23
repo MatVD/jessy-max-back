@@ -54,7 +54,7 @@ class Ticket
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
-    #[Assert\PositiveOrZero]
+    #[Assert\Positive]
     #[Groups(['ticket:read', 'ticket:write'])]
     private string $price;
 

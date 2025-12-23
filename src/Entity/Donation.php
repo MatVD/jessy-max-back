@@ -30,16 +30,19 @@ class Donation
 
     #[ORM\Column(length: 255)]
     #[Groups(['donation:read', 'donation:write'])]
+    #[Assert\NotBlank]
     private ?string $donorName = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['donation:read', 'donation:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     private ?string $donorEmail = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Groups(['donation:read', 'donation:write'])]
     #[Assert\NotNull]
-    #[Assert\PositiveOrZero]
+    #[Assert\Positive]
     private ?string $amount = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -144,7 +147,7 @@ class Donation
         return $this->stripeCheckoutUrl;
     }
 
-    public function setStripeCheckoutUrl(?string $stripeCheckoutUrl): self
+    public function setStripeCheckoutUrl(?string $stripeCheckoutUrl): static
     {
         $this->stripeCheckoutUrl = $stripeCheckoutUrl;
         return $this;
