@@ -123,10 +123,6 @@ class DonationEmailService
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1><span class="heart">❤️</span> Merci pour votre générosité !</h1>
-    </div>
-    
     <div class="content">
         <p>Bonjour <strong>{$donation->getDonorName()}</strong>,</p>
         
