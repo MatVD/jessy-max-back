@@ -8,7 +8,7 @@ use App\Enum\PaymentStatus;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
 
-readonly class DonationCheckoutProcessor implements ProcessorInterface
+final readonly class DonationCheckoutProcessor implements ProcessorInterface
 {
     public function __construct(
         private ProcessorInterface $decorated,
