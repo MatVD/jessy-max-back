@@ -3,6 +3,7 @@
 namespace App\Tests\Entity;
 
 use App\Entity\Donation;
+use App\Enum\PaymentStatus;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Uid\Uuid;
 
@@ -35,7 +36,7 @@ class DonationTest extends TestCase
             ->setMessage('Keep up the good work!')
             ->setStripeSessionId('sess_123')
             ->setStripeCheckoutUrl('https://checkout.stripe.com/pay/sess_123')
-            ->setStatus('paid')
+            ->setStatus(PaymentStatus::PAID)
             ->setCreatedAt($createdAt);
 
         $this->assertSame('John Doe', $donation->getDonorName());
