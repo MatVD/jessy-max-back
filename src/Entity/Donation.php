@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\DonationRepository;
 use ApiPlatform\Metadata\Post;
+use App\Enum\PaymentStatus;
 use App\State\DonationCheckoutProcessor;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Uid\Uuid;
@@ -54,7 +55,7 @@ class Donation
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Groups(['donation:read'])]
-    private ?string $status = null;
+    private PaymentStatus $status;
 
     #[ORM\Column]
     #[Groups(['donation:read'])]    
@@ -63,7 +64,7 @@ class Donation
     public function __construct()
     {
         $this->id = Uuid::v4();
-        $this->status = 'pending';
+        $this->status = PaymentStatus::PENDING;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -143,12 +144,12 @@ class Donation
         return $this;
     }
 
-    public function getStatus(): ?string
+    public function getStatus(): ?PaymentStatus
     {
         return $this->status;
     }
 
-    public function setStatus(?string $status): static
+    public function setStatus(?PaymentStatus $status): static
     {
         $this->status = $status;
 

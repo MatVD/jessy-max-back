@@ -39,7 +39,7 @@ readonly class DonationCheckoutProcessor implements ProcessorInterface
 
             $data->setStripeSessionId($session->id);
             $data->setStripeCheckoutUrl($session->url);
-            $data->setStatus(PaymentStatus::PENDING->value);
+            $data->setStatus(PaymentStatus::PENDING);
         }
 
         return $this->decorated->process($data, $operation, $uriVariables, $context);

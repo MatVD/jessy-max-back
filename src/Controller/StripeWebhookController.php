@@ -76,7 +76,7 @@ class StripeWebhookController extends AbstractController
                 ->find(Uuid::fromString($donationId));
 
             if ($donation) {
-                $donation->setStatus('completed');
+                $donation->setStatus(PaymentStatus::PAID);
                 $this->entityManager->flush();
             } else {
                 $this->logger->error('Stripe webhook: Donation not found', ['donation_id' => $donationId]);
