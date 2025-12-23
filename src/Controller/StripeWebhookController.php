@@ -70,7 +70,9 @@ class StripeWebhookController extends AbstractController
     private function handleCheckoutCompleted($session): void
     {
         $donationId = $session->metadata->donation_id ?? null;
+        $ticketId = $session->metadata->ticket_id ?? null;
 
+        // Handle donation checkout
         if ($donationId) {
             $donation = $this->entityManager->getRepository(Donation::class)
                 ->find(Uuid::fromString($donationId));
@@ -78,11 +80,14 @@ class StripeWebhookController extends AbstractController
             if ($donation) {
                 $donation->setStatus('completed');
                 $this->entityManager->flush();
+                $this->logger->info('Stripe webhook: Donation completed', ['donation_id' => $donationId]);
+            } else {
+                $this->logger->error('Stripe webhook: Donation not found', ['donation_id' => $donationId]);
             }
+            return;
         }
 
-        $ticketId = $session->metadata->ticket_id ?? null;
-
+        // Handle ticket checkout
         if (!$ticketId) {
             $this->logger->error('Stripe webhook: Missing ticket_id in metadata');
             return;
