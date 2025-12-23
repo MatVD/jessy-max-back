@@ -78,6 +78,8 @@ class StripeWebhookController extends AbstractController
             if ($donation) {
                 $donation->setStatus('completed');
                 $this->entityManager->flush();
+            } else {
+                $this->logger->error('Stripe webhook: Donation not found', ['donation_id' => $donationId]);
             }
         }
 
