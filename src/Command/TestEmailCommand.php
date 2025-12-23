@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\Ticket;
 use App\Enum\PaymentStatus;
+use App\Service\QrCodeService;
 use App\Service\TicketEmailService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -23,6 +24,7 @@ class TestEmailCommand extends Command
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly TicketEmailService $ticketEmailService,
+        private readonly QrCodeService $qrCodeService,
     ) {
         parent::__construct();
     }
@@ -41,10 +43,21 @@ class TestEmailCommand extends Command
         $ticketId = $input->getOption('ticket-id');
 
         if ($ticketId) {
+            // Nettoyer l'UUID (enlever 0x et formater avec tirets)
+            $ticketId = str_replace('0x', '', $ticketId);
+            if (strlen($ticketId) === 32 && !str_contains($ticketId, '-')) {
+                // Formater l'UUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+                $ticketId = substr($ticketId, 0, 8) . '-' .
+                    substr($ticketId, 8, 4) . '-' .
+                    substr($ticketId, 12, 4) . '-' .
+                    substr($ticketId, 16, 4) . '-' .
+                    substr($ticketId, 20);
+            }
+
             // Récupérer un ticket spécifique
             $ticket = $this->entityManager->getRepository(Ticket::class)
                 ->find(Uuid::fromString($ticketId));
-            
+
             if (!$ticket) {
                 $io->error("Ticket #{$ticketId} introuvable");
                 return Command::FAILURE;
@@ -70,7 +83,7 @@ class TestEmailCommand extends Command
         // Override de l'email si spécifié
         $emailOverride = $input->getOption('email');
         $originalEmail = $ticket->getCustomerEmail();
-        
+
         if ($emailOverride) {
             $ticket->setCustomerEmail($emailOverride);
             $io->warning("Email overridé: {$originalEmail} → {$emailOverride}");
@@ -94,14 +107,23 @@ class TestEmailCommand extends Command
         }
 
         try {
+            // Générer le QR code si absent
+            if (!$ticket->getQrCode()) {
+                $io->note('Génération du QR code...');
+                $qrCode = $this->qrCodeService->generateQrCode($ticket);
+                $ticket->setQrCode($qrCode);
+                $this->entityManager->flush();
+            }
+
             $this->ticketEmailService->sendTicketEmail($ticket);
             $io->success('✅ Email envoyé avec succès !');
-            
+
             // Restaurer l'email original
             if ($emailOverride) {
                 $ticket->setCustomerEmail($originalEmail);
+                $this->entityManager->flush();
             }
-            
+
             return Command::SUCCESS;
         } catch (\Exception $e) {
             $io->error('❌ Erreur lors de l\'envoi: ' . $e->getMessage());

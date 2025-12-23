@@ -46,11 +46,6 @@ services:
         arguments:
             - 'App\Entity\Ticket'
 
-    # Email Service
-    App\Service\TicketEmailService:
-        arguments:
-            $fromEmail: "%env(MAIL_FROM_ADDRESS)%"
-
     # State Processors configuration
     App\State\RefundRequestProcessor:
         arguments:
