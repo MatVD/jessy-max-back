@@ -14,7 +14,7 @@ class DonationTest extends TestCase
         $donation = new Donation();
 
         $this->assertInstanceOf(Uuid::class, $donation->getId());
-        $this->assertSame('pending', $donation->getStatus());
+        $this->assertSame(PaymentStatus::PENDING, $donation->getStatus());
         $this->assertInstanceOf(\DateTimeImmutable::class, $donation->getCreatedAt());
         $this->assertNull($donation->getDonorName());
         $this->assertNull($donation->getDonorEmail());
@@ -45,7 +45,7 @@ class DonationTest extends TestCase
         $this->assertSame('Keep up the good work!', $donation->getMessage());
         $this->assertSame('sess_123', $donation->getStripeSessionId());
         $this->assertSame('https://checkout.stripe.com/pay/sess_123', $donation->getStripeCheckoutUrl());
-        $this->assertSame('paid', $donation->getStatus());
+        $this->assertSame(PaymentStatus::PAID, $donation->getStatus());
         $this->assertSame($createdAt, $donation->getCreatedAt());
     }
 
