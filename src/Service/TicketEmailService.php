@@ -14,13 +14,14 @@ use Symfony\Component\Mime\Email;
 class TicketEmailService
 {
     private string $frontendUrl;
-    
+    private string $fromEmail;
+
     public function __construct(
         private readonly MailerInterface $mailer,
         private readonly QrCodeService $qrCodeService,
-        private readonly string $fromEmail = 'noreply@jessymax.com',
     ) {
-        $this->frontendUrl = $_ENV['FRONTEND_URL'] ?? 'https://jessymax.com';
+        $this->frontendUrl = $_ENV['FRONTEND_URL'] ?? 'https://jessyjoycemaxwellmyles.com';
+        $this->fromEmail = $_ENV['FROM_EMAIL'] ?? 'contact@jessyjoycemaxwellmyles.com';
     }
 
     /**
@@ -134,10 +135,6 @@ class TicketEmailService
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🎉 Votre Ticket est Prêt !</h1>
-    </div>
-    
     <div class="content">
         <p>Bonjour <strong>{$ticket->getCustomerName()}</strong>,</p>
         

@@ -1,0 +1,179 @@
+<?php
+
+namespace App\Entity;
+
+use ApiPlatform\Metadata\ApiResource;
+use App\Repository\DonationRepository;
+use ApiPlatform\Metadata\Post;
+use App\Enum\PaymentStatus;
+use App\State\DonationCheckoutProcessor;
+use Doctrine\DBAL\Types\Types;
+use Symfony\Component\Uid\Uuid;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
+#[ORM\Entity(repositoryClass: DonationRepository::class)]
+#[ApiResource(
+    operations: [
+        new Post(processor: DonationCheckoutProcessor::class)
+    ],
+    normalizationContext: ['groups' => ['donation:read']],
+    denormalizationContext: ['groups' => ['donation:write']],
+)]
+class Donation
+{
+    #[ORM\Id]
+    #[ORM\Column(type: 'uuid', unique: true)]
+    #[Groups(['donation:read'])]
+    private Uuid $id;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['donation:read', 'donation:write'])]
+    #[Assert\NotBlank]
+    private ?string $donorName = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(['donation:read', 'donation:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Email]
+    private ?string $donorEmail = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['donation:read', 'donation:write'])]
+    #[Assert\NotNull]
+    #[Assert\Positive]
+    private ?string $amount = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['donation:read', 'donation:write'])]
+    private ?string $message = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['donation:read'])]
+    private ?string $stripeSessionId = null;
+
+    /**
+     * Transient field exposing the Stripe Checkout URL.
+     *
+     * This property is intentionally not persisted in the database (no ORM\Column attribute).
+     * It is populated during the donation creation process and returned in API responses only.
+     */
+    #[Groups(['donation:read'])]
+    private ?string $stripeCheckoutUrl = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['donation:read'])]
+    private PaymentStatus $status;
+
+    #[ORM\Column]
+    #[Groups(['donation:read'])]    
+    private ?\DateTimeImmutable $createdAt = null;
+
+    public function __construct()
+    {
+        $this->id = Uuid::v4();
+        $this->status = PaymentStatus::PENDING;
+        $this->createdAt = new \DateTimeImmutable();
+    }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
+    }
+
+    public function getDonorName(): ?string
+    {
+        return $this->donorName;
+    }
+
+    public function setDonorName(string $donorName): static
+    {
+        $this->donorName = $donorName;
+
+        return $this;
+    }
+
+    public function getDonorEmail(): ?string
+    {
+        return $this->donorEmail;
+    }
+
+    public function setDonorEmail(string $donorEmail): static
+    {
+        $this->donorEmail = $donorEmail;
+
+        return $this;
+    }
+
+    public function getAmount(): ?string
+    {
+        return $this->amount;
+    }
+
+    public function setAmount(string $amount): static
+    {
+        $this->amount = $amount;
+
+        return $this;
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(?string $message): static
+    {
+        $this->message = $message;
+
+        return $this;
+    }
+
+    public function getStripeSessionId(): ?string
+    {
+        return $this->stripeSessionId;
+    }
+
+    public function setStripeSessionId(?string $stripeSessionId): static
+    {
+        $this->stripeSessionId = $stripeSessionId;
+
+        return $this;
+    }
+
+    public function getStripeCheckoutUrl(): ?string
+    {
+        return $this->stripeCheckoutUrl;
+    }
+
+    public function setStripeCheckoutUrl(?string $stripeCheckoutUrl): static
+    {
+        $this->stripeCheckoutUrl = $stripeCheckoutUrl;
+        return $this;
+    }
+
+    public function getStatus(): ?PaymentStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(?PaymentStatus $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+}

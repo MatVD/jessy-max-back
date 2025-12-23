@@ -54,7 +54,7 @@ class Ticket
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     #[Assert\NotNull]
-    #[Assert\PositiveOrZero]
+    #[Assert\Positive]
     #[Groups(['ticket:read', 'ticket:write'])]
     private string $price;
 
@@ -67,7 +67,10 @@ class Ticket
     private ?string $stripeCheckoutSessionId = null;
 
     /**
-     * URL de checkout Stripe (non persistée, utilisée uniquement lors de la création)
+     * Transient field exposing the Stripe Checkout URL.
+     *
+     * This property is intentionally not persisted in the database (no ORM\Column attribute).
+     * It is populated during the ticket creation process and returned in API responses only.
      */
     #[Groups(['ticket:read'])]
     private ?string $stripeCheckoutUrl = null;

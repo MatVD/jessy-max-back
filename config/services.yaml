@@ -46,11 +46,6 @@ services:
         arguments:
             - 'App\Entity\Ticket'
 
-    # Email Service
-    App\Service\TicketEmailService:
-        arguments:
-            $fromEmail: "%env(MAIL_FROM_ADDRESS)%"
-
     # State Processors configuration
     App\State\RefundRequestProcessor:
         arguments:
@@ -61,7 +56,16 @@ services:
         arguments:
             $persistProcessor: '@App\State\TicketProcessor.inner'
         tags:
-            - { name: 'api_platform.state_processor', priority: 200 }
+            - { name: "api_platform.state_processor", priority: 200 }
+
+    App\State\DonationCheckoutProcessor:
+        decorates: "api_platform.doctrine.orm.state.persist_processor"
+        arguments:
+            $decorated: '@App\State\DonationCheckoutProcessor.inner'
+            $stripeSecretKey: "%stripe_secret_key%"
+            $frontendUrl: "%frontend_url%"
+        tags:
+            - { name: "api_platform.state_processor", priority: 100 }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
