@@ -70,7 +70,7 @@ services:
             $stripeSecretKey: "%stripe_secret_key%"
             $frontendUrl: "%frontend_url%"
         tags:
-            - "api_platform.state_processor"
+            - { name: "api_platform.state_processor", priority: 100 }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

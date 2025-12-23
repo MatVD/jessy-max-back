@@ -27,7 +27,7 @@ final readonly class DonationCheckoutProcessor implements ProcessorInterface
                 'line_items' => [[
                     'price_data' => [
                         'currency' => 'eur',
-                        'product_data' => ['name' => 'Don - Jessy Max'],
+                        'product_data' => ['name' => 'Donation'],
                         'unit_amount' => (int)($data->getAmount() * 100),
                     ],
                     'quantity' => 1,
