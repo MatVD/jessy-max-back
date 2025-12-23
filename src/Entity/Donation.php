@@ -50,6 +50,12 @@ class Donation
     #[Groups(['donation:read'])]
     private ?string $stripeSessionId = null;
 
+    /**
+     * Transient field exposing the Stripe Checkout URL.
+     *
+     * This property is intentionally not persisted in the database (no ORM\Column attribute).
+     * It is populated during the donation creation process and returned in API responses only.
+     */
     #[Groups(['donation:read'])]
     private ?string $stripeCheckoutUrl = null;
 
