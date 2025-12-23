@@ -66,8 +66,11 @@ services:
     App\State\DonationCheckoutProcessor:
         decorates: "api_platform.doctrine.orm.state.persist_processor"
         arguments:
-            $stripeSecretKey: "%env(STRIPE_SECRET_KEY)%"
-            $frontendUrl: "%env(FRONTEND_URL)%"
+            $decorated: "@App\\State\\DonationCheckoutProcessor.inner"
+            $stripeSecretKey: "%stripe_secret_key%"
+            $frontendUrl: "%frontend_url%"
+        tags:
+            - "api_platform.state_processor"
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

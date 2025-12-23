@@ -32,8 +32,7 @@ readonly class DonationCheckoutProcessor implements ProcessorInterface
                     ],
                     'quantity' => 1,
                 ]],
-                'success_url' => $this->frontendUrl . '/dons/merci?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url' => $this->frontendUrl . '/dons/annulation',
+                'success_url' => $this->frontendUrl . '/dons/success',
                 'customer_email' => $data->getDonorEmail(),
                 'metadata' => ['donation_id' => $data->getId()->toRfc4122()],
             ]);

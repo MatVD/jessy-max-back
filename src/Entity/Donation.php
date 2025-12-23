@@ -9,45 +9,61 @@ use App\State\DonationCheckoutProcessor;
 use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Uid\Uuid;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: DonationRepository::class)]
 #[ApiResource(
     operations: [
         new Post(processor: DonationCheckoutProcessor::class)
-    ]
+    ],
+    normalizationContext: ['groups' => ['donation:read']],
+    denormalizationContext: ['groups' => ['donation:write']],
 )]
 class Donation
 {
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
+    #[Groups(['donation:read'])]
     private Uuid $id;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['donation:read', 'donation:write'])]
     private ?string $donorName = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['donation:read', 'donation:write'])]
     private ?string $donorEmail = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['donation:read', 'donation:write'])]
+    #[Assert\NotNull]
+    #[Assert\PositiveOrZero]
     private ?string $amount = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['donation:read', 'donation:write'])]
     private ?string $message = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['donation:read'])]
     private ?string $stripeSessionId = null;
 
+    #[Groups(['donation:read'])]
     private ?string $stripeCheckoutUrl = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['donation:read'])]
     private ?string $status = null;
 
     #[ORM\Column]
+    #[Groups(['donation:read'])]    
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
     {
         $this->id = Uuid::v4();
+        $this->status = 'pending';
         $this->createdAt = new \DateTimeImmutable();
     }
 
