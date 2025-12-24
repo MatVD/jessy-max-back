@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Uid\Uuid;
 
-#[Route('/api/tickets', name: 'api_tickets_')]
+#[Route('/api/validation', name: 'api_validation_')]
 class TicketValidationController extends AbstractController
 {
     public function __construct(
