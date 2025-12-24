@@ -16,11 +16,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ApiResource(
     operations: [
-        new Get(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
-        new GetCollection(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
-        new Patch(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new Get(security: "is_granted('ROLE_ADMIN')"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
         new Post(security: "is_granted('ROLE_USER')"),
-        new Delete(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user")
+        new Delete(security: "is_granted('ROLE_ADMIN')")
     ]
 )]
 class ContactMessage
