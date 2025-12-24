@@ -54,6 +54,7 @@ security:
         - { path: ^/api/locations, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/donations, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api/tickets, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/contact_messages, roles: PUBLIC_ACCESS, methods: [POST] }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
