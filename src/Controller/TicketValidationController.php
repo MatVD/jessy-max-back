@@ -145,9 +145,11 @@ class TicketValidationController extends AbstractController
     /**
      * Liste tous les tickets d'un événement
      */
-    #[Route('/event/{eventId}', name: 'list_by_event', methods: ['GET'])]
+    #[Route('/events/{eventId}', name: 'list_by_event', methods: ['GET'])]
     public function listByEvent(string $eventId): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByEvent($eventId);
 
         return $this->json([
@@ -167,9 +169,11 @@ class TicketValidationController extends AbstractController
     /**
      * Statistiques d'un événement
      */
-    #[Route('/event/{eventId}/stats', name: 'event_stats', methods: ['GET'])]
+    #[Route('/events/{eventId}/stats', name: 'event_stats', methods: ['GET'])]
     public function eventStats(string $eventId): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByEvent($eventId);
         $usedTickets = array_filter($tickets, fn(Ticket $t) => $t->isUsed());
 
@@ -191,11 +195,35 @@ class TicketValidationController extends AbstractController
     }
 
     /**
+     * Liste tous les tickets d'une formation
+     */
+    #[Route('/formations/{formationId}', name: 'list_by_formation', methods: ['GET'])]
+    public function listByFormation(string $formationId): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByFormation($formationId);
+        return $this->json([
+            'total' => count($tickets),
+            'tickets' => array_map(fn(Ticket $t) => [
+                'id' => $t->getId()->toRfc4122(),
+                'customerName' => $t->getCustomerName(),
+                'customerEmail' => $t->getCustomerEmail(),
+                'totalPrice' => $t->getPrice(),
+                'purchasedAt' => $t->getPurchasedAt()?->format('Y-m-d H:i:s'),
+                'isUsed' => $t->isUsed(),
+                'usedAt' => $t->getUsedAt()?->format('Y-m-d H:i:s')
+            ], $tickets)
+        ]);
+    }
+
+    /**
      * Statistiques d'une formation
      */
-    #[Route('/formation/{formationId}/stats', name: 'formation_stats', methods: ['GET'])]
+    #[Route('/formations/{formationId}/stats', name: 'formation_stats', methods: ['GET'])]
     public function formationStats(string $formationId): JsonResponse
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
         $tickets = $this->entityManager->getRepository(Ticket::class)->findPaidByFormation($formationId);
         $usedTickets = array_filter($tickets, fn(Ticket $t) => $t->isUsed());
         $totalRevenue = array_reduce(

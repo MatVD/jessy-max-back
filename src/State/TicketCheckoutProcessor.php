@@ -37,6 +37,14 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
                 throw new \LogicException('Le ticket doit être lié à un événement ou une formation');
             }
 
+            $unitPrice = (float) $product->getPrice();
+            if ($unitPrice <= 0) {
+                throw new \LogicException('Le prix de la ressource doit être positif.');
+            }
+
+            // Forcer le prix du ticket sur la valeur serveur afin d'ignorer tout montant client
+            $data->setPrice(number_format($unitPrice, 2, '.', ''));
+
             // Créer la Checkout Session Stripe
             $checkoutSession = Session::create([
                 'submit_type'                   => 'pay',
@@ -50,7 +58,7 @@ final readonly class TicketCheckoutProcessor implements ProcessorInterface
                             'name' => $product->getTitle(),
                             'description' => substr($product->getDescription(), 0, 200),
                         ],
-                        'unit_amount' => (int)($data->getPrice() * 100), // Stripe utilise les centimes
+                        'unit_amount' => (int) round($unitPrice * 100), // Stripe utilise les centimes
                     ],
                     'quantity' => 1,
                 ]],
