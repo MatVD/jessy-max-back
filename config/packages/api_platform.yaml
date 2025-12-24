@@ -20,3 +20,9 @@ api_platform:
     exception_to_status:
         Symfony\Component\Serializer\Exception\ExceptionInterface: 400
         ApiPlatform\Exception\InvalidArgumentException: 400
+
+    swagger:
+        api_keys:
+            JWT:
+                name: Authorization
+                type: header
