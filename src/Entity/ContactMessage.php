@@ -16,8 +16,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity]
 #[ApiResource(
     operations: [
-        new Get(security: "is_granted('ROLE_ADMIN')"),
-        new GetCollection(security: "is_granted('ROLE_ADMIN')"),
+        new Get(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"),
         new Patch(security: "is_granted('ROLE_ADMIN')"),
         new Post(),
         new Delete(security: "is_granted('ROLE_ADMIN')")

@@ -5,6 +5,8 @@ namespace App\Doctrine;
 use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
+use App\Entity\ContactMessage;
+use App\Entity\Donation;
 use App\Entity\RefundRequest;
 use App\Entity\Ticket;
 use Doctrine\ORM\QueryBuilder;
@@ -26,7 +28,7 @@ final class CurrentUserExtension implements QueryCollectionExtensionInterface
 
     private function restrictToCurrentUser(QueryBuilder $queryBuilder, string $resourceClass): void
     {
-        if (!\in_array($resourceClass, [Ticket::class, RefundRequest::class], true)) {
+        if (!\in_array($resourceClass, [Ticket::class, RefundRequest::class, ContactMessage::class, Donation::class], true)) {
             return;
         }
 
