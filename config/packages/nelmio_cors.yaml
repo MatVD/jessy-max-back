@@ -6,9 +6,11 @@ nelmio_cors:
         allow_headers: ["Content-Type", "Authorization"]
         expose_headers: ["Link"]
         max_age: 3600
+        allow_credentials: true
     paths:
         "^/api/":
-            allow_origin: ["*"] # En développement - restreindre en production
+            allow_origin: ["http://localhost:5173"]
             allow_headers: ["*"]
             allow_methods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"]
+            allow_credentials: true
             max_age: 3600
