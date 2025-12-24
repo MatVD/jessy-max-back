@@ -18,11 +18,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Patch(),
-        new Delete()
+        new Get(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new Post(security: "is_granted('ROLE_USER')"),
+        new Patch(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user")
     ],
     normalizationContext: ['groups' => ['refund_request:read']],
     denormalizationContext: ['groups' => ['refund_request:write']]

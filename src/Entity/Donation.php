@@ -3,6 +3,10 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use App\Repository\DonationRepository;
 use ApiPlatform\Metadata\Post;
 use App\Enum\PaymentStatus;
@@ -16,7 +20,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: DonationRepository::class)]
 #[ApiResource(
     operations: [
-        new Post(processor: DonationCheckoutProcessor::class)
+        new Post(processor: DonationCheckoutProcessor::class),
+        new GetCollection(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new Get(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new Patch(security: "is_granted('ROLE_ADMIN')"),
+        new Delete(security: "is_granted('ROLE_ADMIN')")
     ],
     normalizationContext: ['groups' => ['donation:read']],
     denormalizationContext: ['groups' => ['donation:write']],
@@ -67,7 +75,7 @@ class Donation
     private PaymentStatus $status;
 
     #[ORM\Column]
-    #[Groups(['donation:read'])]    
+    #[Groups(['donation:read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     public function __construct()
