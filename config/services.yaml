@@ -51,13 +51,6 @@ services:
         arguments:
             $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
 
-    App\State\TicketProcessor:
-        decorates: api_platform.doctrine.orm.state.persist_processor
-        arguments:
-            $persistProcessor: '@App\State\TicketProcessor.inner'
-        tags:
-            - { name: "api_platform.state_processor", priority: 200 }
-
     App\State\DonationCheckoutProcessor:
         decorates: "api_platform.doctrine.orm.state.persist_processor"
         arguments:
