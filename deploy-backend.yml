@@ -1,0 +1,46 @@
+name: Deploy Backend to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: ctype, iconv, mysql, pdo_mysql
+
+      - name: Install dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      - name: Clear and warm up cache
+        run: |
+          php bin/console cache:clear --env=prod --no-debug
+          php bin/console cache:warmup --env=prod --no-debug
+
+      - name: Deploy to Hostinger
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvc -i --delete --exclude='.git' --exclude='.env.local' --exclude='var/' --exclude='config/jwt/'"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
+          TARGET: ${{ secrets.REMOTE_TARGET_BACKEND }}
+          SCRIPT_AFTER: |
+            cd ${{ secrets.REMOTE_TARGET_BACKEND }}
+            export PATH="$HOME/bin:$PATH"
+            composer install --no-dev --optimize-autoloader --no-interaction
+            php bin/console cache:clear --env=prod
+            php bin/console doctrine:migrations:migrate --no-interaction
+            chmod -R 755 var/
