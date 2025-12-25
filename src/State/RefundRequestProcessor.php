@@ -8,7 +8,9 @@ use App\Entity\RefundRequest;
 use App\Repository\RefundRequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use App\Enum\PaymentStatus;
+use Symfony\Bundle\SecurityBundle\Security;
 
 /**
  * Processor pour gérer la création de demandes de remboursement
@@ -19,6 +21,7 @@ class RefundRequestProcessor implements ProcessorInterface
         private readonly EntityManagerInterface $entityManager,
         private readonly RefundRequestRepository $refundRequestRepository,
         private readonly ProcessorInterface $persistProcessor,
+        private readonly Security $security,
     ) {}
 
     /**
@@ -39,6 +42,15 @@ class RefundRequestProcessor implements ProcessorInterface
             // Vérifier que le ticket n'est pas déjà remboursé
             if ($data->getTicket()->getPaymentStatus() === PaymentStatus::REFUNDED) {
                 throw new BadRequestHttpException('This ticket has already been refunded.');
+            }
+
+            $currentUser = $this->security->getUser();
+            if ($currentUser && !$this->security->isGranted('ROLE_ADMIN') && $data->getTicket()->getUser() !== $currentUser) {
+                throw new AccessDeniedHttpException('You can only request a refund for your own ticket.');
+            }
+
+            if ($currentUser && $data->getUser() === null) {
+                $data->setUser($currentUser);
             }
         }
 

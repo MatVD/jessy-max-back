@@ -51,13 +51,6 @@ services:
         arguments:
             $persistProcessor: "@api_platform.doctrine.orm.state.persist_processor"
 
-    App\State\TicketProcessor:
-        decorates: api_platform.doctrine.orm.state.persist_processor
-        arguments:
-            $persistProcessor: '@App\State\TicketProcessor.inner'
-        tags:
-            - { name: "api_platform.state_processor", priority: 200 }
-
     App\State\DonationCheckoutProcessor:
         decorates: "api_platform.doctrine.orm.state.persist_processor"
         arguments:
@@ -66,6 +59,13 @@ services:
             $frontendUrl: "%frontend_url%"
         tags:
             - { name: "api_platform.state_processor", priority: 100 }
+
+    App\Doctrine\CurrentUserExtension:
+        tags:
+            - {
+                  name: "api_platform.doctrine.orm.query_extension.collection",
+                  priority: 50,
+              }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

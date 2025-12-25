@@ -43,8 +43,19 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/stripe/webhook, roles: PUBLIC_ACCESS }
         - { path: ^/api/login_check, roles: PUBLIC_ACCESS }
-        - { path: ^/api, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs\.json, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api$, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/events, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/formations, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/categories, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/locations, roles: PUBLIC_ACCESS, methods: [GET] }
+        - { path: ^/api/donations, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/tickets, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api/contact_messages, roles: PUBLIC_ACCESS, methods: [POST] }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

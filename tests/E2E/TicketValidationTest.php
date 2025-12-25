@@ -11,7 +11,7 @@ class TicketValidationTest extends AbstractE2ETest
         $qrCode = $this->validQrCode; // Use the actual JWT token from AbstractE2ETest
         $this->client->request(
             'POST',
-            '/api/tickets/validate',
+            '/api/validation/validate',
             [],
             [],
             [

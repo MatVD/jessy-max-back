@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Patch;
 use App\Enum\RefundStatus;
+use App\State\RefundRequestProcessor;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -18,11 +19,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity]
 #[ApiResource(
     operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Patch(),
-        new Delete()
+        new Get(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new GetCollection(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER')"),
+        new Post(security: "is_granted('ROLE_USER')", processor: RefundRequestProcessor::class),
+        new Patch(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user"),
+        new Delete(security: "is_granted('ROLE_ADMIN') or is_granted('ROLE_USER') and object.getUser() === user")
     ],
     normalizationContext: ['groups' => ['refund_request:read']],
     denormalizationContext: ['groups' => ['refund_request:write']]

@@ -23,7 +23,7 @@ final readonly class DonationCheckoutProcessor implements ProcessorInterface
         if ($data instanceof Donation) {
             $session = Session::create([
                 'mode' => 'payment',
-                'payment_method_types' => ['card', 'paypal'],
+                'payment_method_types' => ['card'],
                 'line_items' => [[
                     'price_data' => [
                         'currency' => 'eur',
