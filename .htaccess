@@ -1,27 +1,22 @@
-# .htaccess à placer dans /public_html/api/
-# Redirige toutes les requêtes vers le dossier public/
+<IfModule mod_rewrite.c >
+    RewriteEngine on
+    RewriteOptions inherit
 
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    
-    # Force HTTPS
-    RewriteCond %{HTTPS} off
-    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
-    
-    # Redirige vers public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    # SSL and let's encrypt
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/.+$
+    RewriteCond %{REQUEST_URI} !^/\.well-known/pki-validation/[A-F0-9]{32}\.txt(?:\ Comodo\ DCV)?$
+    RewriteRule ^.well-known/acme-challenge - [L]
+
+    # redirect to no-www
+    RewriteBase /
+    RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+    RewriteRule ^(.*)$ http://%1/$1 [R=301,L]
+
+    # https redirect
+    RewriteCond %{HTTPS} !=on
+    RewriteRule .* https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+    # redirect all requests to public directory
+    RewriteCond %{REQUEST_URI} !public/
+    RewriteRule (.*) /public/$1 [L]
 </IfModule>
-
-# Bloquer accès aux fichiers sensibles
-<FilesMatch "^\.env|^composer\.(json|lock)|^symfony\.lock">
-    Require all denied
-</FilesMatch>
-
-# Bloquer accès aux dossiers système
-RedirectMatch 404 /\.git
-RedirectMatch 404 /vendor
-RedirectMatch 404 /var
-RedirectMatch 404 /config
-RedirectMatch 404 /migrations
-RedirectMatch 404 /tests
-RedirectMatch 404 /bin
