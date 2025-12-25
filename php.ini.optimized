@@ -1,0 +1,43 @@
+; Optimisations PHP pour Symfony sur Hostinger
+; À placer dans ~/domains/api.jessyjoycemaxwellmyles.com/public_html/php.ini
+
+[PHP]
+; OPcache - ESSENTIEL pour les perfs
+opcache.enable=1
+opcache.enable_cli=0
+opcache.memory_consumption=256
+opcache.interned_strings_buffer=16
+opcache.max_accelerated_files=20000
+opcache.revalidate_freq=2
+opcache.fast_shutdown=1
+opcache.validate_timestamps=0  ; En prod, désactive la vérification des timestamps
+
+; Realpath cache - accélère les includes
+realpath_cache_size=4096K
+realpath_cache_ttl=600
+
+; Memory & Time
+memory_limit=512M
+max_execution_time=60
+max_input_time=60
+
+; Upload
+upload_max_filesize=20M
+post_max_size=20M
+
+; Session
+session.save_handler=files
+session.gc_probability=1
+session.gc_divisor=1000
+
+; Disable functions inutiles (sécurité)
+disable_functions=exec,passthru,shell_exec,system,proc_open,popen
+
+; Error handling (prod)
+display_errors=Off
+display_startup_errors=Off
+log_errors=On
+error_log=/home/u666904877/domains/api.jessyjoycemaxwellmyles.com/logs/php_errors.log
+
+; Date
+date.timezone=Europe/Paris

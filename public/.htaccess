@@ -1,5 +1,5 @@
-# .htaccess OPTIMISÉ pour Symfony/API Platform sur Apache/Hostinger
-# Performances proches de FrankenPHP avec Apache bien configuré
+# .htaccess optimisé pour Symfony/API Platform sur Apache
+# Performances et sécurité maximales
 
 DirectoryIndex index.php
 
@@ -7,60 +7,74 @@ DirectoryIndex index.php
     Options -MultiViews
 </IfModule>
 
+# Disable directory listing
+Options -Indexes
+
+# ==========================================
+# REWRITE RULES
+# ==========================================
+
 <IfModule mod_rewrite.c>
+    Options +SymLinksIfOwnerMatch
     RewriteEngine On
 
-    # Force HTTPS
+    # Force HTTPS en production
     RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP_HOST} !^localhost [NC]
     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # RewriteBase auto-detection
     RewriteCond %{REQUEST_URI}::$0 ^(/.+)/(.*)::\2$
     RewriteRule .* - [E=BASE:%1]
 
-    # HTTP Authorization header
+    # Sets the HTTP_AUTHORIZATION header removed by Apache
     RewriteCond %{HTTP:Authorization} .+
     RewriteRule ^ - [E=HTTP_AUTHORIZATION:%0]
 
-    # Redirect sans index.php
+    # Redirect to URI without front controller (301 pour SEO/cache)
     RewriteCond %{ENV:REDIRECT_STATUS} =""
     RewriteRule ^index\.php(?:/(.*)|$) %{ENV:BASE}/$1 [R=301,L]
 
-    # Router vers index.php
+    # Route all requests to front controller
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ %{ENV:BASE}/index.php [L]
 </IfModule>
 
-# Disable directory listing
-Options -Indexes
+<IfModule !mod_rewrite.c>
+    <IfModule mod_alias.c>
+        RedirectMatch 307 ^/$ /index.php/
+    </IfModule>
+</IfModule>
 
 # ==========================================
-# OPTIMISATIONS PERFORMANCES
+# COMPRESSION GZIP/BROTLI
 # ==========================================
 
-# Compression Gzip - ESSENTIEL
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
     AddOutputFilterByType DEFLATE application/json application/javascript application/xml
     AddOutputFilterByType DEFLATE application/vnd.api+json
     AddOutputFilterByType DEFLATE text/javascript application/x-javascript
     
-    # Exceptions
-    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp)$ no-gzip dont-vary
+    # Exceptions pour contenus déjà compressés
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|zip|gz|bz2)$ no-gzip dont-vary
     Header append Vary User-Agent env=!dont-vary
 </IfModule>
 
-# Brotli compression (si disponible sur Hostinger)
 <IfModule mod_brotli.c>
     AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
     AddOutputFilterByType BROTLI_COMPRESS application/json application/javascript
+    AddOutputFilterByType BROTLI_COMPRESS application/vnd.api+json
 </IfModule>
 
-# Cache agressif pour assets statiques
+# ==========================================
+# CACHE STATIQUE
+# ==========================================
+
 <IfModule mod_expires.c>
     ExpiresActive On
     
-    # Images
+    # Images - 1 an
     ExpiresByType image/jpg "access plus 1 year"
     ExpiresByType image/jpeg "access plus 1 year"
     ExpiresByType image/gif "access plus 1 year"
@@ -69,7 +83,7 @@ Options -Indexes
     ExpiresByType image/svg+xml "access plus 1 year"
     ExpiresByType image/x-icon "access plus 1 year"
     
-    # Fonts
+    # Fonts - 1 an
     ExpiresByType font/woff "access plus 1 year"
     ExpiresByType font/woff2 "access plus 1 year"
     ExpiresByType font/ttf "access plus 1 year"
@@ -77,29 +91,33 @@ Options -Indexes
     ExpiresByType application/font-woff "access plus 1 year"
     ExpiresByType application/font-woff2 "access plus 1 year"
     
-    # CSS & JS
+    # CSS & JS - 1 an
     ExpiresByType text/css "access plus 1 year"
     ExpiresByType application/javascript "access plus 1 year"
     ExpiresByType text/javascript "access plus 1 year"
     
-    # Media
+    # Media - 1 an
     ExpiresByType video/mp4 "access plus 1 year"
     ExpiresByType audio/mpeg "access plus 1 year"
     
-    # API responses - court cache
+    # API responses - pas de cache
     ExpiresByType application/json "access plus 0 seconds"
     ExpiresByType application/vnd.api+json "access plus 0 seconds"
+    ExpiresByType text/html "access plus 0 seconds"
 </IfModule>
 
-# Cache-Control headers
+# ==========================================
+# CACHE-CONTROL HEADERS
+# ==========================================
+
 <IfModule mod_headers.c>
-    # Assets statiques - cache agressif
-    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|woff|woff2|ttf|css|js|ico)$">
+    # Assets statiques - cache agressif + immutable
+    <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|woff|woff2|ttf|eot|css|js|ico)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
     
     # API responses - pas de cache
-    <FilesMatch "\.(json)$">
+    <FilesMatch "\.(json|html|php)$">
         Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
         Header set Pragma "no-cache"
     </FilesMatch>
@@ -110,55 +128,58 @@ Options -Indexes
 # ==========================================
 
 <IfModule mod_headers.c>
-    # Security headers
+    # Security headers essentiels
     Header set X-Content-Type-Options "nosniff"
     Header set X-Frame-Options "SAMEORIGIN"
     Header set X-XSS-Protection "1; mode=block"
     Header set Referrer-Policy "strict-origin-when-cross-origin"
     
-    # HSTS - Force HTTPS (6 mois)
+    # HSTS - Force HTTPS (6 mois, activer seulement en prod)
     Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"
     
     # Permissions Policy
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     
-    # CSP pour API (ajuste selon tes besoins)
-    Header set Content-Security-Policy "default-src 'self'; script-src 'none'; style-src 'none';"
+    # CSP pour API Backend (ajuster selon besoins frontend)
+    Header set Content-Security-Policy "default-src 'self'; script-src 'none'; style-src 'none'; img-src 'self' data:;"
+    
+    # Keep-Alive pour performances
+    Header set Connection keep-alive
 </IfModule>
 
 # Bloquer accès aux fichiers sensibles
-<FilesMatch "^\.env|^composer\.(json|lock)|^package(-lock)?\.json|^symfony\.lock">
+<FilesMatch "^\.env|^composer\.(json|lock)|^package(-lock)?\.json|^symfony\.lock|^\.git">
     Require all denied
 </FilesMatch>
 
-# Bloquer accès aux dossiers système
+# Bloquer accès aux dossiers système Symfony
 RedirectMatch 404 /\.git
 RedirectMatch 404 /vendor
 RedirectMatch 404 /var
 RedirectMatch 404 /config
 RedirectMatch 404 /migrations
 RedirectMatch 404 /tests
+RedirectMatch 404 /src
 
 # ==========================================
-# HTTP/2 Server Push (si Hostinger supporte)
+# OPTIMISATIONS PERFORMANCES
 # ==========================================
+
+# ETag pour validation cache
+FileETag MTime Size
+
+# HTTP/2 Server Push (si disponible)
 <IfModule mod_http2.c>
     Protocols h2 h2c http/1.1
 </IfModule>
 
-# ==========================================
-# OPTIMISATIONS ADDITIONNELLES
-# ==========================================
-
-# ETag
-FileETag MTime Size
-
-# Keep-Alive
-<IfModule mod_headers.c>
-    Header set Connection keep-alive
-</IfModule>
-
-# Limite le nombre de requêtes simultanées (anti-DDoS basique)
+# Protection anti-DDoS basique
 <IfModule mod_reqtimeout.c>
     RequestReadTimeout header=20-40,MinRate=500 body=20-40,MinRate=500
+</IfModule>
+
+# Limite taille uploads (ajuster selon besoins)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 10M
 </IfModule>
