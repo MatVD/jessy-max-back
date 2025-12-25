@@ -28,7 +28,7 @@ jobs:
           php bin/console cache:warmup --env=prod --no-debug
 
       - name: Deploy to Hostinger
-        uses: easingthemes/ssh-deploy@v5
+        uses: easingthemes/ssh-deploy@v5.1.0
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rlgoDzvc -i --delete --exclude='.git' --exclude='.env.local' --exclude='var/' --exclude='config/jwt/'"
