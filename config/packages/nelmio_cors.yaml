@@ -9,7 +9,7 @@ nelmio_cors:
         allow_credentials: true
     paths:
         "^/api/":
-            allow_origin: ["http://localhost:5173"]
+            allow_origin: ["http://localhost:5173", "https://jessyjoycemaxwellmyles.com"]
             allow_headers: ["*"]
             allow_methods: ["POST", "PUT", "GET", "DELETE", "PATCH", "OPTIONS"]
             allow_credentials: true
