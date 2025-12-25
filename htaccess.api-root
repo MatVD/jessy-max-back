@@ -1,0 +1,27 @@
+# .htaccess à placer dans /public_html/api/
+# Redirige toutes les requêtes vers le dossier public/
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Force HTTPS
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # Redirige vers public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Bloquer accès aux fichiers sensibles
+<FilesMatch "^\.env|^composer\.(json|lock)|^symfony\.lock">
+    Require all denied
+</FilesMatch>
+
+# Bloquer accès aux dossiers système
+RedirectMatch 404 /\.git
+RedirectMatch 404 /vendor
+RedirectMatch 404 /var
+RedirectMatch 404 /config
+RedirectMatch 404 /migrations
+RedirectMatch 404 /tests
+RedirectMatch 404 /bin
