@@ -30,14 +30,14 @@ jobs:
       - name: Deploy to Hostinger
         uses: easingthemes/ssh-deploy@v5.1.0
         with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          ARGS: "-rlgoDzvc -i --delete --exclude='.git' --exclude='.env.local' --exclude='var/' --exclude='config/jwt/'"
-          SOURCE: "./"
-          REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-          REMOTE_USER: ${{ secrets.REMOTE_USER }}
-          REMOTE_PORT: ${{ secrets.REMOTE_PORT }}
-          TARGET: ${{ secrets.REMOTE_TARGET_BACKEND }}
-          SCRIPT_AFTER: |
+          sshPrivateKey: ${{ secrets.SSH_PRIVATE_KEY }}
+          args: "-rlgoDzvc -i --delete --exclude='.git' --exclude='.env.local' --exclude='var/' --exclude='config/jwt/'"
+          source: "./"
+          remoteHost: ${{ secrets.REMOTE_HOST }}
+          remoteUser: ${{ secrets.REMOTE_USER }}
+          remotePort: ${{ secrets.REMOTE_PORT }}
+          target: ${{ secrets.REMOTE_TARGET_BACKEND }}
+          script_after: |
             cd ${{ secrets.REMOTE_TARGET_BACKEND }}
             export PATH="$HOME/bin:$PATH"
             composer install --optimize-autoloader --no-interaction
