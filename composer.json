@@ -15,7 +15,7 @@
         "doctrine/doctrine-bundle": "^2.16",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.5",
-        "endroid/qr-code": "^6.0",
+        "endroid/qr-code": "^5.0",
         "firebase/php-jwt": "^6.0",
         "lexik/jwt-authentication-bundle": "^3.1",
         "nelmio/cors-bundle": "^2.5",
