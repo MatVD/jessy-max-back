@@ -20,7 +20,7 @@ jobs:
           extensions: ctype, iconv, mysql, pdo_mysql
 
       - name: Install dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction
+        run: composer install --optimize-autoloader --no-interaction
 
       - name: Clear and warm up cache
         run: |
@@ -40,7 +40,7 @@ jobs:
           SCRIPT_AFTER: |
             cd ${{ secrets.REMOTE_TARGET_BACKEND }}
             export PATH="$HOME/bin:$PATH"
-            composer install --no-dev --optimize-autoloader --no-interaction
-            php bin/console cache:clear --env=prod
-            php bin/console doctrine:migrations:migrate --no-interaction
+            composer install --optimize-autoloader --no-interaction
+            php bin/console cache:clear APP_ENV=prod APP_DEBUG=0
+            php bin/console doctrine:migrations:migrate --no-interaction APP_ENV=prod APP_DEBUG=0
             chmod -R 755 var/

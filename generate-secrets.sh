@@ -7,22 +7,18 @@ echo ""
 
 # APP_SECRET
 APP_SECRET=$(openssl rand -hex 32)
-echo "APP_SECRET=$APP_SECRET"
 echo ""
 
 # MERCURE_JWT_SECRET
 MERCURE_JWT_SECRET=$(openssl rand -hex 32)
-echo "MERCURE_JWT_SECRET=$MERCURE_JWT_SECRET"
 echo ""
 
 # JWT_QRCODE_SECRET
 JWT_QRCODE_SECRET=$(openssl rand -hex 32)
-echo "JWT_QRCODE_SECRET=$JWT_QRCODE_SECRET"
 echo ""
 
 # JWT_PASSPHRASE
 JWT_PASSPHRASE=$(openssl rand -hex 16)
-echo "JWT_PASSPHRASE=$JWT_PASSPHRASE"
 echo ""
 
 # Génération des clés JWT

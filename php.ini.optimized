@@ -37,7 +37,7 @@ disable_functions=exec,passthru,shell_exec,system,proc_open,popen
 display_errors=Off
 display_startup_errors=Off
 log_errors=On
-error_log=/home/u666904877/domains/api.jessyjoycemaxwellmyles.com/logs/php_errors.log
+error_log=logs/php_errors.log
 
 ; Date
 date.timezone=Europe/Paris

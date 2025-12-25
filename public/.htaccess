@@ -141,7 +141,7 @@ Options -Indexes
     Header set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     
     # CSP pour API Backend (ajuster selon besoins frontend)
-    Header set Content-Security-Policy "default-src 'self'; script-src 'none'; style-src 'none'; img-src 'self' data:;"
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;"
     
     # Keep-Alive pour performances
     Header set Connection keep-alive
