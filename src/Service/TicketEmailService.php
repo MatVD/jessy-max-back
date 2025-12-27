@@ -72,7 +72,7 @@ class TicketEmailService
                     <tr>
                         <td style="padding: 30px 40px; border-bottom: 1px solid rgba(154, 143, 136, 0.2);">
                             <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; color: #F8F8F8; font-weight: 700;">
-                                JessyMax
+                                Jessy-Joyce & Maxwell-Myles
                             </h1>
                         </td>
                     </tr>
@@ -133,7 +133,7 @@ class TicketEmailService
                                             <img src="{$qrCodeDataUri}" alt="QR Code" style="display: block; width: 180px; height: 180px;" />
                                         </div>
                                         <p style="margin: 15px 0 0; color: #9A8F88; font-size: 13px;">
-                                            Présentez ce QR code à l'entrée de l'{$type}
+                                            Présentez ce QR code à votre arrivée.
                                         </p>
                                     </td>
                                 </tr>
@@ -176,7 +176,7 @@ class TicketEmailService
                     <tr>
                         <td style="padding: 25px 40px; border-top: 1px solid rgba(154, 143, 136, 0.2); text-align: center;">
                             <p style="margin: 0 0 8px; color: #9A8F88; font-size: 12px;">
-                                © JessyMax - Tous droits réservés
+                                © Jessy-Joyce & Maxwell-Myles - Tous droits réservés
                             </p>
                             <p style="margin: 0; color: rgba(154, 143, 136, 0.6); font-size: 11px;">
                                 Cet email a été envoyé à {$ticket->getCustomerEmail()}
@@ -233,7 +233,7 @@ HTML;
                     <tr>
                         <td style="padding: 30px 40px; border-bottom: 1px solid rgba(154, 143, 136, 0.2);">
                             <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; color: #F8F8F8; font-weight: 700;">
-                                JessyMax
+                                Jessy-Joyce & Maxwell-Myles
                             </h1>
                         </td>
                     </tr>
@@ -278,7 +278,7 @@ HTML;
                     <tr>
                         <td style="padding: 25px 40px; border-top: 1px solid rgba(154, 143, 136, 0.2); text-align: center;">
                             <p style="margin: 0; color: #9A8F88; font-size: 12px;">
-                                © JessyMax - Tous droits réservés
+                                © Jessy-Joyce & Maxwell-Myles - Tous droits réservés
                             </p>
                         </td>
                     </tr>
