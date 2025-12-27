@@ -74,6 +74,13 @@ class StripeWebhookController extends AbstractController
         $donationId = $session->metadata->donation_id ?? null;
         $ticketId = $session->metadata->ticket_id ?? null;
 
+        // Logs pour le débogage
+        $this->logger->info('Stripe webhook: Checkout session completed', [
+            'session_id' => $session->id,
+            'donation_id' => $donationId,
+            'ticket_id' => $ticketId
+        ]);
+
         if ($donationId) {
             $donation = $this->entityManager->getRepository(Donation::class)
                 ->find(Uuid::fromString($donationId));
