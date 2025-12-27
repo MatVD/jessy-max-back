@@ -39,6 +39,9 @@ class StripeWebhookController extends AbstractController
         $payload = $request->getContent();
         $sigHeader = $request->headers->get('Stripe-Signature');
 
+        // Log du payload reçu pour le débogage
+        $this->logger->info('Stripe webhook received', ['payload' => $payload]);
+
         // En environnement de test, on désactive la vérification de signature
         if ($_ENV['APP_ENV'] === 'test') {
             $event = json_decode($payload);
@@ -81,28 +84,43 @@ class StripeWebhookController extends AbstractController
             'ticket_id' => $ticketId
         ]);
 
+        // Fallback: si donation_id manquant en metadata, on tente via session id Stripe
+        $donation = null;
         if ($donationId) {
             $donation = $this->entityManager->getRepository(Donation::class)
                 ->find(Uuid::fromString($donationId));
-
+        } elseif (isset($session->id)) {
+            $donation = $this->entityManager->getRepository(Donation::class)
+                ->findOneBy(['stripeSessionId' => $session->id]);
             if ($donation) {
-                $donation->setStatus(PaymentStatus::PAID);
-                $this->entityManager->flush();
-                $this->logger->info('Stripe webhook: Donation marked as paid', ['donation_id' => $donationId]);
-
-                // Envoyer un email de confirmation de don
-                try {
-                    $this->donationEmailService->sendDonationConfirmation($donation);
-                    $this->logger->info('Stripe webhook: Donation confirmation email sent', ['donation_id' => $donationId]);
-                } catch (\Exception $e) {
-                    $this->logger->error('Stripe webhook: Failed to send donation email', [
-                        'donation_id' => $donationId,
-                        'error' => $e->getMessage()
-                    ]);
-                }
-            } else {
-                $this->logger->error('Stripe webhook: Donation not found', ['donation_id' => $donationId]);
+                $donationId = $donation->getId()->toRfc4122();
+                $this->logger->warning('Stripe webhook: donation_id missing in metadata, resolved via session id', [
+                    'stripe_session_id' => $session->id,
+                    'donation_id' => $donationId,
+                ]);
             }
+        }
+
+        if ($donation) {
+            $donation->setStatus(PaymentStatus::PAID);
+            $this->entityManager->flush();
+            $this->logger->info('Stripe webhook: Donation marked as paid', ['donation_id' => $donationId]);
+
+            // Envoyer un email de confirmation de don
+            try {
+                $this->donationEmailService->sendDonationConfirmation($donation);
+                $this->logger->info('Stripe webhook: Donation confirmation email sent', ['donation_id' => $donationId]);
+            } catch (\Exception $e) {
+                $this->logger->error('Stripe webhook: Failed to send donation email', [
+                    'donation_id' => $donationId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+            return;
+        }
+
+        if ($donationId && !$donation) {
+            $this->logger->error('Stripe webhook: Donation not found', ['donation_id' => $donationId]);
             return;
         }
 
