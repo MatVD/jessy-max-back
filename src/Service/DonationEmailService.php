@@ -72,7 +72,7 @@ HTML : '';
                     <tr>
                         <td style="padding: 30px 40px; border-bottom: 1px solid rgba(154, 143, 136, 0.2);">
                             <h1 style="margin: 0; font-family: 'Playfair Display', Georgia, serif; font-size: 28px; color: #F8F8F8; font-weight: 700;">
-                                JessyMax
+                                Jessy-Joyce & Maxwell-Myles
                             </h1>
                         </td>
                     </tr>
@@ -138,7 +138,7 @@ HTML : '';
                                 <tr>
                                     <td style="padding: 15px 20px;">
                                         <p style="margin: 0; color: #F8F8F8; font-size: 14px; line-height: 1.5;">
-                                            <strong>ℹ️ Information :</strong> Un reçu fiscal vous sera envoyé dans les prochains jours si votre don est éligible à une réduction d'impôts.
+                                            <strong>ℹ️ Information :</strong> Très bientôt, nous offrirons la possibilité de recevoir un reçu fiscal afin qu'il soit éligible à une réduction d'impôts. Restez à l'affût des mises à jour sur notre site web {$this->frontendUrl} !
                                         </p>
                                     </td>
                                 </tr>
@@ -149,7 +149,7 @@ HTML : '';
                             </p>
                             
                             <p style="margin: 0; color: #F8F8F8; font-size: 15px;">
-                                Toute l'équipe JessyMax 🙏
+                                Toute l'équipe de Jessy-Joyce & Maxwell-Myles 🙏
                             </p>
                         </td>
                     </tr>
@@ -158,7 +158,7 @@ HTML : '';
                     <tr>
                         <td style="padding: 25px 40px; border-top: 1px solid rgba(154, 143, 136, 0.2); text-align: center;">
                             <p style="margin: 0 0 8px; color: #9A8F88; font-size: 12px;">
-                                © JessyMax - Tous droits réservés
+                                © Jessy-Joyce & Maxwell-Myles - Tous droits réservés
                             </p>
                             <p style="margin: 0; color: rgba(154, 143, 136, 0.6); font-size: 11px;">
                                 Cet email a été envoyé à {$donation->getDonorEmail()}
