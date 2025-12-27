@@ -74,67 +74,52 @@ class StripeWebhookController extends AbstractController
 
     private function handleCheckoutCompleted($session): void
     {
-        $donationId = $session->metadata->donation_id ?? null;
-        $ticketId = $session->metadata->ticket_id ?? null;
+        $sessionId = $session->id ?? null;
 
         // Logs pour le débogage
         $this->logger->info('Stripe webhook: Checkout session completed', [
-            'session_id' => $session->id,
-            'donation_id' => $donationId,
-            'ticket_id' => $ticketId
+            'session_id' => $sessionId,
         ]);
 
-        // Fallback: si donation_id manquant en metadata, on tente via session id Stripe
-        $donation = null;
-        if ($donationId) {
-            $donation = $this->entityManager->getRepository(Donation::class)
-                ->find(Uuid::fromString($donationId));
-        } elseif (isset($session->id)) {
-            $donation = $this->entityManager->getRepository(Donation::class)
-                ->findOneBy(['stripeSessionId' => $session->id]);
-            if ($donation) {
-                $donationId = $donation->getId()->toRfc4122();
-                $this->logger->warning('Stripe webhook: donation_id missing in metadata, resolved via session id', [
-                    'stripe_session_id' => $session->id,
-                    'donation_id' => $donationId,
-                ]);
-            }
+        if (!$sessionId) {
+            $this->logger->error('Stripe webhook: Missing session id');
+            return;
         }
+
+        // 1) Tentative côté Don
+        $donation = $this->entityManager->getRepository(Donation::class)
+            ->findOneBy(['stripeSessionId' => $sessionId]);
 
         if ($donation) {
             $donation->setStatus(PaymentStatus::PAID);
             $this->entityManager->flush();
-            $this->logger->info('Stripe webhook: Donation marked as paid', ['donation_id' => $donationId]);
+            $this->logger->info('Stripe webhook: Donation marked as paid', [
+                'donation_id' => $donation->getId()->toRfc4122(),
+                'session_id' => $sessionId,
+            ]);
 
-            // Envoyer un email de confirmation de don
             try {
                 $this->donationEmailService->sendDonationConfirmation($donation);
-                $this->logger->info('Stripe webhook: Donation confirmation email sent', ['donation_id' => $donationId]);
+                $this->logger->info('Stripe webhook: Donation confirmation email sent', [
+                    'donation_id' => $donation->getId()->toRfc4122(),
+                ]);
             } catch (\Exception $e) {
                 $this->logger->error('Stripe webhook: Failed to send donation email', [
-                    'donation_id' => $donationId,
+                    'donation_id' => $donation->getId()->toRfc4122(),
                     'error' => $e->getMessage()
                 ]);
             }
             return;
         }
 
-        if ($donationId && !$donation) {
-            $this->logger->error('Stripe webhook: Donation not found', ['donation_id' => $donationId]);
-            return;
-        }
-
-
-        if (!$ticketId) {
-            $this->logger->error('Stripe webhook: Missing ticket_id in metadata');
-            return;
-        }
-
+        // 2) Tentative côté Ticket
         $ticket = $this->entityManager->getRepository(Ticket::class)
-            ->find(Uuid::fromString($ticketId));
+            ->findOneBy(['stripeCheckoutSessionId' => $sessionId]);
 
         if (!$ticket) {
-            $this->logger->error('Stripe webhook: Ticket not found', ['ticket_id' => $ticketId]);
+            $this->logger->error('Stripe webhook: Ticket/Donation not found for session', [
+                'session_id' => $sessionId,
+            ]);
             return;
         }
 
@@ -161,15 +146,19 @@ class StripeWebhookController extends AbstractController
         // Envoyer l'email avec le ticket et QR code
         try {
             $this->ticketEmailService->sendTicketEmail($ticket);
-            $this->logger->info('Stripe webhook: Email sent', ['ticket_id' => $ticketId]);
+            $this->logger->info('Stripe webhook: Email sent', [
+                'ticket_id' => $ticket->getId()->toRfc4122(),
+            ]);
         } catch (\Exception $e) {
             $this->logger->error('Stripe webhook: Failed to send email', [
-                'ticket_id' => $ticketId,
+                'ticket_id' => $ticket->getId()->toRfc4122(),
                 'error' => $e->getMessage()
             ]);
         }
 
-        $this->logger->info('Stripe webhook: Payment completed', ['ticket_id' => $ticketId]);
+        $this->logger->info('Stripe webhook: Payment completed', [
+            'ticket_id' => $ticket->getId()->toRfc4122(),
+        ]);
     }
 
     private function handlePaymentFailed($paymentIntent): void
